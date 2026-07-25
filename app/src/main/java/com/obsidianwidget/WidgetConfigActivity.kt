@@ -16,6 +16,7 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
 
 class WidgetConfigActivity : AppCompatActivity() {
 
@@ -187,7 +188,7 @@ class WidgetConfigActivity : AppCompatActivity() {
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         )
         vaultManager.vaultUri = uri
-        vaultManager.vaultName = uri.lastPathSegment?.substringAfterLast(':') ?: "Vault"
+        vaultManager.vaultName = DocumentFile.fromTreeUri(this, uri)?.name ?: "Vault"
         vaultPathText.text = vaultManager.vaultName
     }
 
