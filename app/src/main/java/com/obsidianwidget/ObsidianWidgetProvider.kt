@@ -232,10 +232,18 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
             createActionIntent(context, ACTION_CAPTURE, appWidgetId)
         )
 
-        // Show/hide button bar based on setting
+        // Show each action independently and hide the bar when neither is enabled
+        views.setViewVisibility(
+            R.id.widget_add,
+            if (vaultManager.showAddButton) View.VISIBLE else View.GONE
+        )
+        views.setViewVisibility(
+            R.id.widget_btn_capture,
+            if (vaultManager.showNoteButton) View.VISIBLE else View.GONE
+        )
         views.setViewVisibility(
             R.id.widget_button_bar,
-            if (vaultManager.showButtons) View.VISIBLE else View.GONE
+            if (vaultManager.showAddButton || vaultManager.showNoteButton) View.VISIBLE else View.GONE
         )
 
         // Absorb taps on empty space so they don't trigger launcher reconfigure

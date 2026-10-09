@@ -30,7 +30,8 @@ class WidgetConfigActivity : AppCompatActivity() {
     private lateinit var noteListContainer: LinearLayout
     private lateinit var transparencySeekBar: SeekBar
     private lateinit var transparencyLabel: TextView
-    private lateinit var showButtonsToggle: Switch
+    private lateinit var showAddButtonToggle: Switch
+    private lateinit var showNoteButtonToggle: Switch
     private lateinit var sortUncheckedToggle: Switch
     private lateinit var tapCheckboxOnlyToggle: Switch
     private lateinit var showAddToTopToggle: Switch
@@ -90,7 +91,8 @@ class WidgetConfigActivity : AppCompatActivity() {
         noteListContainer = findViewById(R.id.config_note_list_container)
         transparencySeekBar = findViewById(R.id.config_transparency)
         transparencyLabel = findViewById(R.id.config_transparency_label)
-        showButtonsToggle = findViewById(R.id.config_show_buttons)
+        showAddButtonToggle = findViewById(R.id.config_show_add_button)
+        showNoteButtonToggle = findViewById(R.id.config_show_note_button)
         sortUncheckedToggle = findViewById(R.id.config_sort_unchecked)
         tapCheckboxOnlyToggle = findViewById(R.id.config_tap_checkbox_only)
         showAddToTopToggle = findViewById(R.id.config_show_add_to_top)
@@ -158,7 +160,8 @@ class WidgetConfigActivity : AppCompatActivity() {
         updateModeSections(isPinned)
 
         refreshNoteList()
-        showButtonsToggle.isChecked = vaultManager.showButtons
+        showAddButtonToggle.isChecked = vaultManager.showAddButton
+        showNoteButtonToggle.isChecked = vaultManager.showNoteButton
         sortUncheckedToggle.isChecked = vaultManager.sortUnchecked
         tapCheckboxOnlyToggle.isChecked = vaultManager.tapCheckboxOnly
         showAddToTopToggle.isChecked = vaultManager.showAddToTop
@@ -291,7 +294,8 @@ class WidgetConfigActivity : AppCompatActivity() {
             dateFormat = dateFormatInput.text.toString().trim().ifBlank { "yyyy-MM-dd" },
             noteMode = if (noteModeGroup.checkedRadioButtonId == R.id.config_radio_pinned)
                 VaultManager.NoteMode.PINNED else VaultManager.NoteMode.DAILY,
-            showButtons = showButtonsToggle.isChecked,
+            showAddButton = showAddButtonToggle.isChecked,
+            showNoteButton = showNoteButtonToggle.isChecked,
             sortUnchecked = sortUncheckedToggle.isChecked,
             widgetAlpha = transparencySeekBar.progress,
             tapCheckboxOnly = tapCheckboxOnlyToggle.isChecked,

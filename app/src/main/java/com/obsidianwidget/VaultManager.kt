@@ -39,6 +39,8 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         private const val KEY_PINNED_NOTE_URI = "pinned_note_uri"
         private const val KEY_PINNED_NOTE_NAME = "pinned_note_name"
         private const val KEY_SHOW_BUTTONS = "show_buttons"
+        private const val KEY_SHOW_ADD_BUTTON = "show_add_button"
+        private const val KEY_SHOW_NOTE_BUTTON = "show_note_button"
         private const val KEY_SORT_UNCHECKED = "sort_unchecked"
         private const val KEY_PINNED_NOTE_URIS = "pinned_note_uris"
         private const val KEY_PINNED_NOTE_NAMES = "pinned_note_names"
@@ -65,6 +67,8 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
                 .remove("${KEY_PINNED_NOTE_URI}_$widgetId")
                 .remove("${KEY_PINNED_NOTE_NAME}_$widgetId")
                 .remove("${KEY_SHOW_BUTTONS}_$widgetId")
+                .remove("${KEY_SHOW_ADD_BUTTON}_$widgetId")
+                .remove("${KEY_SHOW_NOTE_BUTTON}_$widgetId")
                 .remove("${KEY_SORT_UNCHECKED}_$widgetId")
                 .remove("${KEY_PINNED_NOTE_URIS}_$widgetId")
                 .remove("${KEY_PINNED_NOTE_NAMES}_$widgetId")
@@ -186,9 +190,19 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         return names[idx]
     }
 
-    var showButtons: Boolean
-        get() = prefs.getBoolean(wk(KEY_SHOW_BUTTONS), prefs.getBoolean(KEY_SHOW_BUTTONS, true))
-        set(value) = prefs.edit().putBoolean(wk(KEY_SHOW_BUTTONS), value).apply()
+    var showAddButton: Boolean
+        get() = prefs.getBoolean(
+            wk(KEY_SHOW_ADD_BUTTON),
+            prefs.getBoolean(wk(KEY_SHOW_BUTTONS), prefs.getBoolean(KEY_SHOW_BUTTONS, true))
+        )
+        set(value) = prefs.edit().putBoolean(wk(KEY_SHOW_ADD_BUTTON), value).apply()
+
+    var showNoteButton: Boolean
+        get() = prefs.getBoolean(
+            wk(KEY_SHOW_NOTE_BUTTON),
+            prefs.getBoolean(wk(KEY_SHOW_BUTTONS), prefs.getBoolean(KEY_SHOW_BUTTONS, true))
+        )
+        set(value) = prefs.edit().putBoolean(wk(KEY_SHOW_NOTE_BUTTON), value).apply()
 
     var sortUnchecked: Boolean
         get() = prefs.getBoolean(wk(KEY_SORT_UNCHECKED), prefs.getBoolean(KEY_SORT_UNCHECKED, false))
@@ -259,7 +273,8 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         dailyFolder: String,
         dateFormat: String,
         noteMode: NoteMode,
-        showButtons: Boolean,
+        showAddButton: Boolean,
+        showNoteButton: Boolean,
         sortUnchecked: Boolean,
         widgetAlpha: Int,
         tapCheckboxOnly: Boolean,
@@ -273,7 +288,8 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
             .putString(wk(KEY_DAILY_FOLDER), dailyFolder)
             .putString(wk(KEY_DATE_FORMAT), dateFormat)
             .putString(wk(KEY_NOTE_MODE), noteMode.name)
-            .putBoolean(wk(KEY_SHOW_BUTTONS), showButtons)
+            .putBoolean(wk(KEY_SHOW_ADD_BUTTON), showAddButton)
+            .putBoolean(wk(KEY_SHOW_NOTE_BUTTON), showNoteButton)
             .putBoolean(wk(KEY_SORT_UNCHECKED), sortUnchecked)
             .putInt(wk(KEY_WIDGET_ALPHA), widgetAlpha)
             .putBoolean(wk(KEY_TAP_CHECKBOX_ONLY), tapCheckboxOnly)

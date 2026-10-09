@@ -66,7 +66,8 @@ All settings are per-widget. Tap the ⚙ icon on any widget to access:
 | Notes | Add/remove multiple pinned notes |
 | Daily Subfolder | e.g. `Daily Notes` |
 | Date Format | Any Java date pattern (`yyyy-MM-dd`, `dd-MM-yyyy`, etc.) |
-| Show Buttons | Toggle the + Add / Note button bar |
+| Show + Add Button | Toggle the + Add button independently |
+| Show Note Button | Toggle the Note button independently |
 | Sort Unchecked | Move incomplete tasks to the top |
 | Tap Checkbox Only | Require tapping the checkbox circle to toggle |
 | Show Add-to-Top | Show the add-to-top toggle on capture dialogs |
