@@ -392,6 +392,16 @@
                 android:layout_marginBottom="8dp">
 
                 <RadioButton
+                    android:id="@+id/config_theme_system"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="System"
+                    android:textColor="@color/obsidian_text"
+                    android:textSize="13sp"
+                    android:buttonTint="@color/obsidian_primary" />
+
+                <RadioButton
                     android:id="@+id/config_theme_dark"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

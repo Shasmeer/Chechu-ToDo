@@ -2,6 +2,7 @@ package com.obsidianwidget
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import java.io.BufferedReader
@@ -225,7 +226,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         set(value) = prefs.edit().putBoolean(wk(KEY_SHOW_ADD_TO_TOP), value).apply()
 
     var widgetTheme: String
-        get() = prefs.getString(wk(KEY_WIDGET_THEME), "dark") ?: "dark"
+        get() = prefs.getString(wk(KEY_WIDGET_THEME), "system") ?: "system"
         set(value) = prefs.edit().putString(wk(KEY_WIDGET_THEME), value).apply()
 
     var accentColor: String
@@ -237,7 +238,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         set(value) = prefs.edit().putBoolean(wk(KEY_SHOW_TODO_COUNT), value).apply()
 
     fun getThemeColors(): ThemeColors {
-        val isDark = widgetTheme == "dark"
+        val isDark = isDarkTheme()
         val accent = try { android.graphics.Color.parseColor(accentColor) } catch (_: Exception) { 0xFFD97757.toInt() }
         return if (isDark) {
             ThemeColors(
@@ -256,6 +257,13 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
                 buttonText = 0xFFFFFFFF.toInt()
             )
         }
+    }
+
+    fun isDarkTheme(): Boolean = when (widgetTheme) {
+        "dark" -> true
+        "light" -> false
+        else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+            Configuration.UI_MODE_NIGHT_YES
     }
 
     data class ThemeColors(

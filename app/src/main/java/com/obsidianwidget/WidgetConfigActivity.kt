@@ -172,7 +172,13 @@ class WidgetConfigActivity : AppCompatActivity() {
         transparencyLabel.text = "${vaultManager.widgetAlpha}%"
 
         // Theme
-        themeGroup.check(if (vaultManager.widgetTheme == "light") R.id.config_theme_light else R.id.config_theme_dark)
+        themeGroup.check(
+            when (vaultManager.widgetTheme) {
+                "dark" -> R.id.config_theme_dark
+                "light" -> R.id.config_theme_light
+                else -> R.id.config_theme_system
+            }
+        )
 
         // Accent color
         selectedAccentColor = vaultManager.accentColor
@@ -301,7 +307,11 @@ class WidgetConfigActivity : AppCompatActivity() {
             tapCheckboxOnly = tapCheckboxOnlyToggle.isChecked,
             addToTop = vaultManager.addToTop,
             showAddToTop = showAddToTopToggle.isChecked,
-            widgetTheme = if (themeGroup.checkedRadioButtonId == R.id.config_theme_light) "light" else "dark",
+            widgetTheme = when (themeGroup.checkedRadioButtonId) {
+                R.id.config_theme_dark -> "dark"
+                R.id.config_theme_light -> "light"
+                else -> "system"
+            },
             accentColor = selectedAccentColor,
             showTodoCount = showTodoCountToggle.isChecked
         )

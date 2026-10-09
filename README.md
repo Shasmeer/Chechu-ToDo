@@ -49,7 +49,7 @@ Or open in Android Studio and click **Run**.
 - **Nested indentation** — sub-items display with matching indent levels
 - **Sort unchecked first** — push completed tasks to the bottom
 - **Accent color presets** — 8 color choices (terracotta, purple, blue, green, red, teal, pink, amber)
-- **Dark & light themes** — choose your preferred look
+- **System, dark & light themes** — follow Android automatically or choose a fixed look
 - **Widget transparency** — adjustable opacity to blend with your wallpaper
 - **Auto-refresh** — updates every 15 minutes and on screen unlock
 - **Deep link to Obsidian** — tap the title to open the note in Obsidian
@@ -72,7 +72,7 @@ All settings are per-widget. Tap the ⚙ icon on any widget to access:
 | Tap Checkbox Only | Require tapping the checkbox circle to toggle |
 | Show Add-to-Top | Show the add-to-top toggle on capture dialogs |
 | Show TODO Count | Display unchecked task count in the header |
-| Theme | Dark or Light |
+| Theme | Follow the system theme, or use Dark or Light |
 | Accent Color | Pick from 8 color presets |
 | Widget Opacity | 0–100% transparency slider |
 

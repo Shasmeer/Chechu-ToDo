@@ -257,7 +257,7 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
 
         // Apply theme colors
         val colors = vaultManager.getThemeColors()
-        val isDark = vaultManager.widgetTheme == "dark"
+        val isDark = vaultManager.isDarkTheme()
         views.setInt(R.id.widget_root, "setBackgroundResource",
             if (isDark) R.drawable.widget_background else R.drawable.widget_background_light)
         views.setTextColor(R.id.widget_date, colors.text)
