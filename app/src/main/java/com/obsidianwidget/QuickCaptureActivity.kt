@@ -2,8 +2,11 @@ package com.obsidianwidget
 
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +29,23 @@ class QuickCaptureActivity : AppCompatActivity() {
         val captureTitle = findViewById<android.widget.TextView>(R.id.capture_title)
         val addToTopToggle = findViewById<Switch>(R.id.capture_add_to_top)
         val addToTopRow = findViewById<View>(R.id.capture_add_to_top_row)
+        val sectionRow = findViewById<View>(R.id.capture_section_row)
+        val sectionSpinner = findViewById<Spinner>(R.id.capture_section)
+        val headings = if (appendToWidget) widgetVaultManager.getNoteHeadings() else emptyList()
+
+        if (headings.isNotEmpty()) {
+            sectionRow.visibility = View.VISIBLE
+            val sectionNames = listOf("Whole note") + headings.map { heading ->
+                "  ".repeat((heading.level - 1).coerceAtMost(3)) + heading.title
+            }
+            sectionSpinner.adapter = ArrayAdapter(
+                this,
+                R.layout.capture_section_item,
+                sectionNames
+            ).apply {
+                setDropDownViewResource(R.layout.capture_section_dropdown_item)
+            }
+        }
 
         // Show/hide add-to-top toggle based on widget config
         if (widgetVaultManager.showAddToTop) {
@@ -65,7 +85,10 @@ class QuickCaptureActivity : AppCompatActivity() {
 
             val success = if (appendToWidget) {
                 widgetVaultManager.addToTop = addToTopToggle.isChecked
-                widgetVaultManager.appendToWidgetNote(text)
+                val headingLineIndex = headings
+                    .getOrNull(sectionSpinner.selectedItemPosition - 1)
+                    ?.lineIndex
+                widgetVaultManager.appendToWidgetNote(text, headingLineIndex)
             } else {
                 vaultManager.addToTop = addToTopToggle.isChecked
                 vaultManager.appendToDailyNote(text)
@@ -85,5 +108,9 @@ class QuickCaptureActivity : AppCompatActivity() {
                 captureInput.setText(it)
             }
         }
+
+        captureInput.requestFocus()
+        captureInput.setSelection(captureInput.text.length)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 }

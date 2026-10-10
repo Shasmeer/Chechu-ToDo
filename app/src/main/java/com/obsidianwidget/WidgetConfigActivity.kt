@@ -33,6 +33,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     private lateinit var showAddButtonToggle: Switch
     private lateinit var showNoteButtonToggle: Switch
     private lateinit var sortUncheckedToggle: Switch
+    private lateinit var hidePropertiesToggle: Switch
     private lateinit var tapCheckboxOnlyToggle: Switch
     private lateinit var showAddToTopToggle: Switch
     private lateinit var showTodoCountToggle: Switch
@@ -94,6 +95,7 @@ class WidgetConfigActivity : AppCompatActivity() {
         showAddButtonToggle = findViewById(R.id.config_show_add_button)
         showNoteButtonToggle = findViewById(R.id.config_show_note_button)
         sortUncheckedToggle = findViewById(R.id.config_sort_unchecked)
+        hidePropertiesToggle = findViewById(R.id.config_hide_properties)
         tapCheckboxOnlyToggle = findViewById(R.id.config_tap_checkbox_only)
         showAddToTopToggle = findViewById(R.id.config_show_add_to_top)
         showTodoCountToggle = findViewById(R.id.config_show_todo_count)
@@ -163,6 +165,7 @@ class WidgetConfigActivity : AppCompatActivity() {
         showAddButtonToggle.isChecked = vaultManager.showAddButton
         showNoteButtonToggle.isChecked = vaultManager.showNoteButton
         sortUncheckedToggle.isChecked = vaultManager.sortUnchecked
+        hidePropertiesToggle.isChecked = vaultManager.hideProperties
         tapCheckboxOnlyToggle.isChecked = vaultManager.tapCheckboxOnly
         showAddToTopToggle.isChecked = vaultManager.showAddToTop
         showTodoCountToggle.isChecked = vaultManager.showTodoCount
@@ -303,6 +306,7 @@ class WidgetConfigActivity : AppCompatActivity() {
             showAddButton = showAddButtonToggle.isChecked,
             showNoteButton = showNoteButtonToggle.isChecked,
             sortUnchecked = sortUncheckedToggle.isChecked,
+            hideProperties = hidePropertiesToggle.isChecked,
             widgetAlpha = transparencySeekBar.progress,
             tapCheckboxOnly = tapCheckboxOnlyToggle.isChecked,
             addToTop = vaultManager.addToTop,
