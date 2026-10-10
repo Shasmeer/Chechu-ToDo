@@ -3,6 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val appVersionCode = providers.gradleProperty("appVersionCode").orNull?.toIntOrNull() ?: 5
+val appVersionName = providers.gradleProperty("appVersionName").orNull ?: "4.0"
+
 android {
     namespace = "com.obsidianwidget"
     compileSdk = 34
@@ -11,8 +14,8 @@ android {
         applicationId = "com.obsidianwidget"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "4.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
     }
 
     buildTypes {
