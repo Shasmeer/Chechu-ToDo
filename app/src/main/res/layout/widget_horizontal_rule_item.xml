@@ -8,10 +8,12 @@
     android:paddingTop="4dp"
     android:paddingBottom="4dp">
 
-    <View
+    <ImageView
         android:id="@+id/horizontal_rule_line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_gravity="center_vertical"
-        android:background="@color/obsidian_text_secondary" />
+        android:contentDescription="@null"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_horizontal_rule" />
 </FrameLayout>

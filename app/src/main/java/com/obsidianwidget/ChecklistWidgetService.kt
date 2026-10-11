@@ -127,7 +127,7 @@ class ChecklistRemoteViewsFactory(
 
         if (item.isHorizontalRule) {
             val views = RemoteViews(context.packageName, R.layout.widget_horizontal_rule_item)
-            views.setInt(R.id.horizontal_rule_line, "setBackgroundColor", themeColors.textSecondary)
+            views.setInt(R.id.horizontal_rule_line, "setColorFilter", themeColors.textSecondary)
             views.setOnClickFillInIntent(R.id.horizontal_rule_root, Intent())
             return views
         }
