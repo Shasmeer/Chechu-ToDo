@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -53,6 +54,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         private const val KEY_HIDE_PROPERTIES = "hide_properties"
         private const val KEY_PINNED_NOTE_URIS = "pinned_note_uris"
         private const val KEY_PINNED_NOTE_NAMES = "pinned_note_names"
+        private const val KEY_PINNED_NOTE_PATHS = "pinned_note_paths"
         private const val KEY_CURRENT_NOTE_INDEX = "current_note_index"
         private const val KEY_WIDGET_ALPHA = "widget_alpha"
         private const val KEY_TAP_CHECKBOX_ONLY = "tap_checkbox_only"
@@ -83,6 +85,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
                 .remove("${KEY_HIDE_PROPERTIES}_$widgetId")
                 .remove("${KEY_PINNED_NOTE_URIS}_$widgetId")
                 .remove("${KEY_PINNED_NOTE_NAMES}_$widgetId")
+                .remove("${KEY_PINNED_NOTE_PATHS}_$widgetId")
                 .remove("${KEY_CURRENT_NOTE_INDEX}_$widgetId")
                 .remove("${KEY_WIDGET_ALPHA}_$widgetId")
                 .remove("${KEY_TAP_CHECKBOX_ONLY}_$widgetId")
@@ -149,6 +152,17 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         }
         set(value) { prefs.edit().putString(wk(KEY_PINNED_NOTE_NAMES), value.joinToString("|||")).commit() }
 
+    private var pinnedNotePathList: List<String>
+        get() = prefs.getString(wk(KEY_PINNED_NOTE_PATHS), null)
+            ?.split("|||")
+            ?.map(Uri::decode)
+            ?: emptyList()
+        set(value) {
+            prefs.edit()
+                .putString(wk(KEY_PINNED_NOTE_PATHS), value.joinToString("|||") { Uri.encode(it) })
+                .commit()
+        }
+
     var currentNoteIndex: Int
         get() = prefs.getInt(wk(KEY_CURRENT_NOTE_INDEX), 0)
         set(value) { prefs.edit().putInt(wk(KEY_CURRENT_NOTE_INDEX), value).commit() }
@@ -156,20 +170,27 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
     fun addPinnedNote(uri: Uri, name: String) {
         val uris = pinnedNoteUriList.toMutableList()
         val names = pinnedNoteNameList.toMutableList()
+        val paths = pinnedNotePathList.toMutableList()
+        while (paths.size < uris.size) paths.add("")
         uris.add(uri.toString())
         names.add(name)
+        paths.add(getVaultRelativePath(uri).orEmpty())
         pinnedNoteUriList = uris
         pinnedNoteNameList = names
+        pinnedNotePathList = paths
     }
 
     fun removePinnedNote(index: Int) {
         val uris = pinnedNoteUriList.toMutableList()
         val names = pinnedNoteNameList.toMutableList()
+        val paths = pinnedNotePathList.toMutableList()
         if (index in uris.indices) {
             uris.removeAt(index)
             names.removeAt(index)
+            if (index in paths.indices) paths.removeAt(index)
             pinnedNoteUriList = uris
             pinnedNoteNameList = names
+            pinnedNotePathList = paths
             if (currentNoteIndex >= uris.size) {
                 currentNoteIndex = (uris.size - 1).coerceAtLeast(0)
             }
@@ -191,7 +212,22 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         val uris = pinnedNoteUriList
         if (uris.isEmpty()) return null
         val idx = currentNoteIndex.coerceIn(0, uris.lastIndex)
-        return Uri.parse(uris[idx])
+        val storedUri = Uri.parse(uris[idx])
+        val relativePath = pinnedNotePathList.getOrNull(idx)?.takeIf { it.isNotBlank() }
+            ?: getVaultRelativePath(storedUri)
+        val resolvedUri = relativePath?.let(::findNoteByRelativePath)?.uri ?: return storedUri
+
+        if (resolvedUri != storedUri) {
+            val updatedUris = uris.toMutableList().apply { this[idx] = resolvedUri.toString() }
+            pinnedNoteUriList = updatedUris
+        }
+        if (relativePath != pinnedNotePathList.getOrNull(idx)) {
+            val updatedPaths = pinnedNotePathList.toMutableList()
+            while (updatedPaths.size <= idx) updatedPaths.add("")
+            updatedPaths[idx] = relativePath
+            pinnedNotePathList = updatedPaths
+        }
+        return resolvedUri
     }
 
     fun getCurrentPinnedNoteName(): String? {
@@ -501,6 +537,31 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
             if (!current.isDirectory) return null
         }
         return current
+    }
+
+    private fun getVaultRelativePath(noteUri: Uri): String? {
+        val rootUri = vaultUri ?: return null
+        return try {
+            val treeId = DocumentsContract.getTreeDocumentId(rootUri)
+            val documentId = DocumentsContract.getDocumentId(noteUri)
+            if (documentId.startsWith("$treeId/")) {
+                documentId.removePrefix("$treeId/")
+            } else {
+                null
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun findNoteByRelativePath(path: String): DocumentFile? {
+        val rootUri = vaultUri ?: return null
+        var current = DocumentFile.fromTreeUri(context, rootUri) ?: return null
+        for (segment in path.split("/")) {
+            if (segment.isBlank()) continue
+            current = current.findFile(segment) ?: return null
+        }
+        return current.takeIf { it.isFile }
     }
 
     private fun findOrCreateSubDirectory(root: DocumentFile, path: String): DocumentFile? {
