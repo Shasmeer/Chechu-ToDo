@@ -9,6 +9,9 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.provider.DocumentsContract
 import android.view.View
 import android.widget.RemoteViews
@@ -63,6 +66,7 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         when (intent.action) {
             ACTION_REFRESH -> updateAllWidgets(context)
             ACTION_CAPTURE -> {
+                performHaptic(context)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
                 val captureIntent = Intent(context, QuickCaptureActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -71,6 +75,7 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                 context.startActivity(captureIntent)
             }
             ACTION_ADD -> {
+                performHaptic(context)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
                 val addIntent = Intent(context, QuickCaptureActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -80,10 +85,12 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                 context.startActivity(addIntent)
             }
             ACTION_OPEN -> {
+                performHaptic(context)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
                 openObsidian(context, widgetId)
             }
             ACTION_TOGGLE -> {
+                performHaptic(context)
                 val url = intent.getStringExtra(EXTRA_URL)
                 if (!url.isNullOrEmpty()) {
                     try {
@@ -104,6 +111,7 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                 }
             }
             ACTION_NAV_LEFT, ACTION_NAV_RIGHT -> {
+                performHaptic(context)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
                 if (widgetId >= 0) {
                     val vaultManager = VaultManager(context, widgetId)
@@ -112,6 +120,19 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                     updateWidget(context, appWidgetManager, widgetId)
                 }
             }
+        }
+    }
+
+    private fun performHaptic(context: Context) {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            context.getSystemService(VibratorManager::class.java)?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        } ?: return
+
+        if (vibrator.hasVibrator()) {
+            vibrator.vibrate(VibrationEffect.createOneShot(24, VibrationEffect.DEFAULT_AMPLITUDE))
         }
     }
 

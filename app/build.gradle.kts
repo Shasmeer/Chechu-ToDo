@@ -3,8 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-val appVersionCode = providers.gradleProperty("appVersionCode").orNull?.toIntOrNull() ?: 4_002_001
-val appVersionName = providers.gradleProperty("appVersionName").orNull ?: "4.2.1"
+val appVersionCode = providers.gradleProperty("appVersionCode").orNull?.toIntOrNull() ?: 4_002_002
+val appVersionName = providers.gradleProperty("appVersionName").orNull ?: "4.2.2"
 
 android {
     namespace = "com.obsidianwidget"

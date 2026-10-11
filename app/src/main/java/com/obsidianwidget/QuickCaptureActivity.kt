@@ -56,12 +56,13 @@ class QuickCaptureActivity : AppCompatActivity() {
         if (appendToWidget) {
             val noteName = widgetVaultManager.getWidgetTitle()
             captureTitle.text = "Add to $noteName"
-            captureInput.hint = "Type something to add..."
-            captureInput.inputType = android.text.InputType.TYPE_CLASS_TEXT
-            captureInput.layoutParams.height = resources.getDimensionPixelSize(
-                android.R.dimen.app_icon_size) // ~48dp, compact
+            captureInput.hint = "One item per line..."
+            captureInput.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
+                android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
             captureInput.setSingleLine(false)
-            captureInput.maxLines = 3
+            captureInput.maxLines = 8
         } else {
             captureTitle.text = "Quick Note"
             captureInput.hint = "Capture a thought..."

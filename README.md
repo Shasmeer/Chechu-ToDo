@@ -44,6 +44,8 @@ Or open in Android Studio and click **Run**.
 - **Quick capture** — "Note" button appends to today's daily note
 - **Append with +** — one-tap add to whichever note the widget is currently showing
 - **Section-aware capture** — add tasks to the top or bottom of a selected heading or subheading
+- **Multiline capture** — add several tasks at once with one non-empty item per line
+- **Haptic actions** — receive subtle feedback for widget controls and task toggles
 - **TODO counter** — optional live count of unchecked tasks in the header
 - **Markdown rendering** — bold, italic, links, headings, and bullet lists
 - **Clickable links** — tap URLs and Markdown links to open in your browser

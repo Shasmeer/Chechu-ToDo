@@ -67,6 +67,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         private const val DEFAULT_DATE_FORMAT = "yyyy-MM-dd"
 
         private val CHECKLIST_REGEX = Regex("""^(\s*)-\s*\[([ xX])\]\s*(.*)$""")
+        private val CAPTURE_TASK_PREFIX = Regex("""^(?:[-*+]\s*)?(?:\[[ xX]\]\s*)?""")
         private val HEADING_REGEX = Regex("""^(#{1,6})\s+(.+)$""")
         private val BULLET_REGEX = Regex("""^(\s*)[*+-]\s+(.+)$""")
         private val PROPERTY_REGEX = Regex("""^([A-Za-z0-9_-]+):\s*(.*)$""")
@@ -430,7 +431,20 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
      * Append text to today's daily note (creates the file if it doesn't exist).
      */
     fun appendToWidgetNote(text: String, headingLineIndex: Int? = null): Boolean {
-        val formatted = if (parseChecklist().any { !it.isPlainText }) "- [ ] $text" else text
+        val inputLines = text.lines().map { it.trim() }.filter { it.isNotEmpty() }
+        if (inputLines.isEmpty()) return false
+
+        val formatted = if (parseChecklist().any { !it.isPlainText }) {
+            inputLines.mapNotNull { line ->
+                CAPTURE_TASK_PREFIX.replace(line, "").trim()
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { "- [ ] $it" }
+            }.joinToString("\n")
+        } else {
+            inputLines.joinToString("\n")
+        }
+        if (formatted.isEmpty()) return false
+
         if (headingLineIndex != null) {
             return appendToHeading(formatted, headingLineIndex)
         }
