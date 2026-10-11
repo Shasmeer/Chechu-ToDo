@@ -32,6 +32,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         val isPlainText: Boolean = false,
         val isHeading: Boolean = false,
         val isBullet: Boolean = false,
+        val isHorizontalRule: Boolean = false,
         val indentLevel: Int = 0,
         val propertyName: String? = null
     )
@@ -622,6 +623,8 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
                 val checked = match.groupValues[2].lowercase() == "x"
                 val text = match.groupValues[3].trim()
                 items.add(ChecklistItem(lineIndex = index, text = text, isChecked = checked, indentLevel = indentLevel))
+            } else if (line.trim() == "---") {
+                items.add(ChecklistItem(lineIndex = index, text = "", isChecked = false, isPlainText = true, isHorizontalRule = true))
             } else if (headingMatch != null) {
                 val text = headingMatch.groupValues[2].trim()
                 items.add(ChecklistItem(lineIndex = index, text = text, isChecked = false, isPlainText = true, isHeading = true))

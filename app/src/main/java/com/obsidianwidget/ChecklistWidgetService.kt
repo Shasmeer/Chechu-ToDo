@@ -125,6 +125,13 @@ class ChecklistRemoteViewsFactory(
             return views
         }
 
+        if (item.isHorizontalRule) {
+            val views = RemoteViews(context.packageName, R.layout.widget_horizontal_rule_item)
+            views.setInt(R.id.horizontal_rule_line, "setBackgroundColor", themeColors.textSecondary)
+            views.setOnClickFillInIntent(R.id.horizontal_rule_root, Intent())
+            return views
+        }
+
         if (item.isPlainText) {
             val views = RemoteViews(context.packageName, R.layout.widget_text_item)
             val displayText = if (item.isBullet) "•  ${item.text}" else item.text
@@ -196,7 +203,7 @@ class ChecklistRemoteViewsFactory(
     }
 
     override fun getLoadingView(): RemoteViews? = null
-    override fun getViewTypeCount(): Int = 4
+    override fun getViewTypeCount(): Int = 5
     override fun getItemId(position: Int): Long = items[position].lineIndex.toLong()
     override fun hasStableIds(): Boolean = true
 }
