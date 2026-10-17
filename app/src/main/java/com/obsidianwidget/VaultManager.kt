@@ -641,9 +641,12 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
 
     private fun writeFileContent(uri: Uri, content: String): Boolean {
         return try {
-            context.contentResolver.openOutputStream(uri, "wt")?.use { outputStream ->
-                OutputStreamWriter(outputStream).use { writer ->
+            val outputStream = context.contentResolver.openOutputStream(uri, "wt")
+                ?: return false
+            outputStream.use { stream ->
+                OutputStreamWriter(stream).use { writer ->
                     writer.write(content)
+                    writer.flush()
                 }
             }
             true
