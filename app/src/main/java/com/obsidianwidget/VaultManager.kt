@@ -282,7 +282,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         set(value) = prefs.edit().putString(wk(KEY_WIDGET_THEME), value).apply()
 
     var accentColor: String
-        get() = prefs.getString(wk(KEY_ACCENT_COLOR), "#D97757") ?: "#D97757"
+        get() = prefs.getString(wk(KEY_ACCENT_COLOR), "#4A9EF5") ?: "#4A9EF5"
         set(value) = prefs.edit().putString(wk(KEY_ACCENT_COLOR), value).apply()
 
     var showTodoCount: Boolean
@@ -291,7 +291,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
 
     fun getThemeColors(): ThemeColors {
         val isDark = isDarkTheme()
-        val accent = try { android.graphics.Color.parseColor(accentColor) } catch (_: Exception) { 0xFFD97757.toInt() }
+        val accent = try { android.graphics.Color.parseColor(accentColor) } catch (_: Exception) { 0xFF4A9EF5.toInt() }
         return if (isDark) {
             ThemeColors(
                 bg = 0xFF101A30.toInt(),
