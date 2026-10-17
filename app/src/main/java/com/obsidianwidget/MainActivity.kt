@@ -452,7 +452,7 @@ class MainActivity : AppCompatActivity() {
                 val description = detail.text.toString()
                 val rule = codes[spinner.selectedItemPosition]
                 worker.execute {
-                    val ok = try { repository.saveTask(item?.id, text, description, due, rule) }
+                    val ok = try { repository.saveTask(item?.id, text, description, due, rule, item?.revision) }
                     catch (e: Exception) { false }
                     runOnUiThread {
                         if (ok) { dialog.dismiss(); refresh(); notifyWidget() }
@@ -491,7 +491,7 @@ class MainActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
                 worker.execute {
-                    val ok = try { repository.saveNote(item?.id, noteTitle, noteBody) }
+                    val ok = try { repository.saveNote(item?.id, noteTitle, noteBody, item?.revision) }
                     catch (e: Exception) { false }
                     runOnUiThread {
                         if (ok) { dialog.dismiss(); refresh(); notifyWidget() }
