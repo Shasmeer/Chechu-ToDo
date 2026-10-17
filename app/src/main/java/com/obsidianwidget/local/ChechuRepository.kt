@@ -72,19 +72,9 @@ class ChechuRepository(context: Context) {
                     .atZone(java.time.ZoneId.systemDefault()).toLocalDate() == today
             }
             if (alreadyToday) return@runInTransaction false
-            val current = task.dueEpochDay?.let(LocalDate::ofEpochDay) ?: today
-            val from = if (current.isAfter(today)) current else today
-            val next = when (task.repeatRule) {
-                "DAILY" -> from.plusDays(1)
-                "WEEKLY" -> from.plusWeeks(1)
-                "WEEKDAYS" -> {
-                    var nextDate = from.plusDays(1)
-                    while (nextDate.dayOfWeek == DayOfWeek.SATURDAY ||
-                        nextDate.dayOfWeek == DayOfWeek.SUNDAY) nextDate = nextDate.plusDays(1)
-                    nextDate
-                }
-                else -> return@runInTransaction false
-            }
+            val next = RecurrenceEngine.next(
+                task.repeatRule, task.dueEpochDay?.let(LocalDate::ofEpochDay), today
+            ) ?: return@runInTransaction false
             dao.insertCompletion(TaskCompletionRecord(taskId = id, scheduledEpochDay = task.dueEpochDay))
             dao.updateTask(task.copy(
                 dueEpochDay = next.toEpochDay(), completed = false,
