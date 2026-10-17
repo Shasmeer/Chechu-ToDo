@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
@@ -281,12 +280,12 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         )
 
         // Apply widget transparency
-        views.setFloat(R.id.widget_root, "setAlpha", vaultManager.widgetAlpha / 100f)
+        views.setFloat(R.id.widget_glass_surface, "setAlpha", vaultManager.widgetAlpha / 100f)
 
         // Apply theme colors
         val colors = vaultManager.getThemeColors()
         val isDark = vaultManager.isDarkTheme()
-        views.setInt(R.id.widget_root, "setBackgroundResource",
+        views.setInt(R.id.widget_glass_surface, "setBackgroundResource",
             if (isDark) R.drawable.widget_background else R.drawable.widget_background_light)
         views.setTextColor(R.id.widget_date, colors.text)
         views.setTextColor(R.id.widget_note_preview, colors.textSecondary)
@@ -297,12 +296,12 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         views.setInt(R.id.widget_settings, "setColorFilter", colors.text)
         views.setInt(R.id.widget_cycle_note, "setColorFilter", colors.text)
 
-        // Tint accent-colored buttons (preserves rounded drawable shape)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val accentTint = ColorStateList.valueOf(colors.accent)
-            views.setColorStateList(R.id.widget_btn_capture, "setBackgroundTintList", accentTint)
-            views.setColorStateList(R.id.widget_add, "setBackgroundTintList", accentTint)
-        }
+        // Neutral translucent glass buttons; adjust foreground for dark/light themes.
+        // Accent remains on task checkboxes and Markdown links.
+        views.setTextColor(R.id.widget_add_label, colors.text)
+        views.setTextColor(R.id.widget_capture_label, colors.text)
+        views.setInt(R.id.widget_add_icon, "setColorFilter", colors.text)
+        views.setInt(R.id.widget_capture_icon, "setColorFilter", colors.text)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
