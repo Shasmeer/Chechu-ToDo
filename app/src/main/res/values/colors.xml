@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Chechu Liquid Glass | deep ocean / crisp icy-blue typography -->
-    <color name="obsidian_bg">#091224</color>
-    <color name="obsidian_surface">#15233B</color>
-    <color name="obsidian_primary">#356FCA</color>
-    <color name="obsidian_primary_dark">#2557A9</color>
-    <color name="obsidian_accent">#9BC9FF</color>
-    <color name="obsidian_text">#F5F8FF</color>
-    <color name="obsidian_text_secondary">#B9C9E0</color>
-    <color name="obsidian_card">#B4233752</color>
+    <color name="obsidian_bg">#FAF9F8</color>
+    <color name="obsidian_surface">#FFFFFF</color>
+    <color name="obsidian_primary">#FF785C</color>
+    <color name="obsidian_primary_dark">#DB6149</color>
+    <color name="obsidian_accent">#FF785C</color>
+    <color name="obsidian_text">#202125</color>
+    <color name="obsidian_text_secondary">#777982</color>
+    <color name="obsidian_card">#F4F4F3</color>
     <color name="white">#FFFFFF</color>
-    <color name="widget_bg">#D21D2B45</color>
-    <color name="divider">#5B819CB9</color>
-    <color name="text_checked">#A0AFC5</color>
-    <color name="glass_border">#70FFFFFF</color>
-    <color name="glass_sheen">#33FFFFFF</color>
+    <color name="widget_bg">#FFFDFC</color>
+    <color name="divider">#E5E3E1</color>
+    <color name="text_checked">#999BA0</color>
+    <color name="glass_border">#E6E4E2</color>
+    <color name="glass_sheen">#FFFFFF</color>
 </resources>
