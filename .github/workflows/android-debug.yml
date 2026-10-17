@@ -5,7 +5,6 @@ on:
     branches:
       - feature/chechu-liquid-glass-v1
       - feature/today-widget-redesign-v2
-      - feature/v3-local-management-foundation
   pull_request:
     branches:
       - main
@@ -14,6 +13,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: chechu-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   android-debug:
