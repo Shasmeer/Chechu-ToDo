@@ -1,4 +1,21 @@
-# Obsidian Widget for Android
+# Chechu ToDo — Liquid Glass (development)
+
+Chechu ToDo is an Android home-screen notes and checklist widget **currently built on the Obsidian vault workflow** from [harshilchordia/obsidian-widget](https://github.com/harshilchordia/obsidian-widget). The fork keeps the original notes engine and introduces a new visual treatment.
+
+**Status:** Experimental design branch. The source has been reviewed for XML structure, but an Android APK has **not yet been confirmed to compile or pass device testing**. Do not merge into `main` or distribute an APK based on appearance alone.
+
+**Glass behavior:** The Android widget uses RemoteViews-compatible layered translucent drawable resources (not continuous live wallpaper blur). The quick-capture dialog requests native blur-behind on Android 12+ when the OS supports it; the drawable remains the fallback.
+
+**Development branch:** `feature/chechu-liquid-glass-v1`  
+**Build workflow:** `.github/workflows/android-debug.yml`, with a debug APK artifact when an Actions run succeeds.
+
+For Android Studio, open the repository and run the `app` configuration. On Linux/macOS/Git Bash use `./gradlew :app:assembleDebug`. This upstream snapshot has `gradlew`, but no `gradlew.bat`; Windows PowerShell users can build through Android Studio.
+
+**Upstream attribution/licensing:** The upstream README declares MIT, but a separate root `LICENSE` file wasn't found during this review. Verify the licensing terms and retain original copyright attribution before external redistribution.
+
+---
+
+## Original Obsidian Widget documentation
 
 A feature-rich Android home screen widget for [Obsidian](https://obsidian.md). View your notes, check off tasks, and capture ideas — all without opening the app.
 

@@ -11,7 +11,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.obsidianwidget"
+        applicationId = "com.chechu.todo"
         minSdk = 26
         targetSdk = 34
         versionCode = appVersionCode

@@ -1,5 +1,6 @@
 package com.obsidianwidget
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -19,6 +20,15 @@ class QuickCaptureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         supportRequestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_quick_capture)
+
+        // Android 12+ offers real behind-window blur on supported devices.
+        // Layered translucent dialog resources remain the fallback when blur is disabled.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+            val attributes = window.attributes
+            attributes.setBlurBehindRadius((28 * resources.displayMetrics.density).toInt())
+            window.attributes = attributes
+        }
 
         vaultManager = VaultManager(this)
 
