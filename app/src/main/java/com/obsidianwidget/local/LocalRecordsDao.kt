@@ -24,6 +24,8 @@ interface LocalRecordsDao {
     fun archiveTask(id: String, at: Long?, expectedRevision: Long, now: Long): Int
     @Query("UPDATE tasks SET deletedAt = :at, updatedAt = :now, revision = revision+1 WHERE id=:id AND revision=:expectedRevision")
     fun trashTask(id: String, at: Long?, expectedRevision: Long, now: Long): Int
+    @Query("UPDATE tasks SET updatedAt=:now, revision=revision+1 WHERE id=:id AND revision=:expectedRevision AND deletedAt IS NULL AND archivedAt IS NULL")
+    fun touchTask(id: String, expectedRevision: Long, now: Long): Int
     @Query("DELETE FROM tasks WHERE id=:id AND deletedAt IS NOT NULL")
     fun purgeTask(id: String): Int
     @Query("UPDATE tasks SET ruleId = :ruleId, completedAt = NULL, updatedAt = :now, revision = revision+1 WHERE id=:id AND revision=:expectedRevision AND deletedAt IS NULL")
