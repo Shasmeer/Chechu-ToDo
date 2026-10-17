@@ -20,7 +20,8 @@ data class TaskRecord(
     val archivedAtMillis: Long? = null,
     val deletedAtMillis: Long? = null,
     val createdAtMillis: Long = System.currentTimeMillis(),
-    val updatedAtMillis: Long = System.currentTimeMillis()
+    val updatedAtMillis: Long = System.currentTimeMillis(),
+    val revision: Long = 0
 )
 
 @Entity(
