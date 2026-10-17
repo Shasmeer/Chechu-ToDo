@@ -208,6 +208,8 @@ class ChecklistRemoteViewsFactory(
         // Fill-in intent for toggling this item
         val fillIntent = Intent().apply {
             putExtra(ObsidianWidgetProvider.EXTRA_LINE_INDEX, item.lineIndex)
+            putExtra(ObsidianWidgetProvider.EXTRA_EXPECTED_LINE, item.rawLine)
+            putExtra(ObsidianWidgetProvider.EXTRA_EXPECTED_URI, VaultManager(context, widgetId).getWidgetNoteUri()?.toString().orEmpty())
             putExtra(ObsidianWidgetProvider.EXTRA_WIDGET_ID, widgetId)
         }
         if (tapCheckboxOnly) {
