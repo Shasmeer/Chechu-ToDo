@@ -294,17 +294,17 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         val accent = try { android.graphics.Color.parseColor(accentColor) } catch (_: Exception) { 0xFFD97757.toInt() }
         return if (isDark) {
             ThemeColors(
-                bg = 0xFF1A1A1E.toInt(),
-                text = 0xFFE8E6E3.toInt(),
-                textSecondary = 0xFF8B8B8F.toInt(),
+                bg = 0xFF101A30.toInt(),
+                text = 0xFFF5F8FF.toInt(),
+                textSecondary = 0xFFB9C9E0.toInt(),
                 accent = accent,
                 buttonText = 0xFFFFFFFF.toInt()
             )
         } else {
             ThemeColors(
-                bg = 0xFFF5F5F5.toInt(),
-                text = 0xFF1A1A1E.toInt(),
-                textSecondary = 0xFF6B6B6F.toInt(),
+                bg = 0xFFF1F6FF.toInt(),
+                text = 0xFF17243A.toInt(),
+                textSecondary = 0xFF52627C.toInt(),
                 accent = accent,
                 buttonText = 0xFFFFFFFF.toInt()
             )
