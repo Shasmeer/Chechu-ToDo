@@ -1,6 +1,8 @@
 package com.obsidianwidget
 
 import android.app.DatePickerDialog
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Paint
@@ -140,7 +142,19 @@ class MainActivity : AppCompatActivity() {
             contentDescription = "Legacy vault settings"
             background = surface(pale, 16)
             setOnClickListener {
-                startActivity(Intent(this@MainActivity, WidgetConfigActivity::class.java))
+                val ids = AppWidgetManager.getInstance(this@MainActivity).getAppWidgetIds(
+                    ComponentName(this@MainActivity, ObsidianWidgetProvider::class.java))
+                if (ids.isNotEmpty()) {
+                    startActivity(Intent(this@MainActivity, WidgetConfigActivity::class.java).apply {
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, ids[0])
+                    })
+                } else {
+                    AlertDialog.Builder(this@MainActivity)
+                        .setTitle("Widget setup")
+                        .setMessage("Add the Today widget to your home screen first, then open its settings to choose offline tasks or Obsidian notes.")
+                        .setPositiveButton("OK", null)
+                        .show()
+                }
             }
         }
         top.addView(settings, LinearLayout.LayoutParams(dp(46), dp(46)))
