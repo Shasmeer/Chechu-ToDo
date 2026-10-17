@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Chechu ToDo</string>
-    <string name="widget_description">Chechu glass widget for Obsidian notes and tasks</string>
+    <string name="widget_description">Today To-Do and Notes home-screen widget</string>
     <string name="widget_title">Daily Note</string>
     <string name="no_vault_selected">Tap to select your Obsidian vault</string>
     <string name="no_daily_note">No daily note found</string>
     <string name="quick_capture">Quick Capture</string>
     <string name="open_obsidian">Open Obsidian</string>
-    <string name="capture_hint">Type your note…</string>
+    <string name="capture_hint">Write your note…</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="select_vault">Select Vault Folder</string>
