@@ -469,7 +469,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:layout_marginEnd="8dp"
-                    android:tag="#D97757" />
+                    android:tag="#FF785C" />
 
                 <View
                     android:id="@+id/color_purple"
