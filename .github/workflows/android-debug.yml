@@ -5,6 +5,7 @@ on:
     branches:
       - feature/chechu-liquid-glass-v1
       - feature/today-widget-redesign-v2
+      - feature/v3-local-management-foundation
   pull_request:
     branches:
       - main
