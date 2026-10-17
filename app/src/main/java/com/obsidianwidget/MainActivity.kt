@@ -216,12 +216,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refresh() {
-        tabTasks.setBackground(surface(if (!notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT)
-        tabNotes.setBackground(surface(if (notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT)
+        tabTasks.setBackground(surface(if (!notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT))
+        tabNotes.setBackground(surface(if (notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT))
         tabTasks.setTextColor(if (!notesMode) ink else muted)
         tabNotes.setTextColor(if (notesMode) ink else muted)
         for ((name, view) in listOf("active" to stateActive, "archive" to stateArchive, "trash" to stateTrash)) {
-            view.setBackground(surface(if (category == name) Color.WHITE else Color.TRANSPARENT, 14)
+            view.setBackground(surface(if (category == name) Color.WHITE else Color.TRANSPARENT, 14))
             view.setTextColor(if (category == name) coral else muted)
         }
         addAction.text = if (notesMode) "+   New Note" else "+   Add To-Do"
@@ -263,7 +263,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderTask(item: TaskRecord) {
         val row = horizontal().apply {
-            setBackground(surface(pale)
+            setBackground(surface(pale))
             setPadding(dp(14), dp(13), dp(10), dp(13))
         }
         val check = label(if (item.completed) "✓" else "○", 27f, true,
@@ -295,7 +295,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderNote(item: NoteRecord) {
         val row = horizontal().apply {
-            setBackground(surface(pale)
+            setBackground(surface(pale))
             setPadding(dp(18), dp(17), dp(9), dp(17))
         }
         val body = vertical()
