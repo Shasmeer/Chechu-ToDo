@@ -34,6 +34,8 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         const val EXTRA_LOCAL_EDIT = "v3_local_edit"
         const val EXTRA_LOCAL_NOTE = "v3_local_note"
         const val EXTRA_LINE_INDEX = "extra_line_index"
+        const val EXTRA_EXPECTED_LINE = "extra_expected_line"
+        const val EXTRA_EXPECTED_URI = "extra_expected_uri"
         const val EXTRA_APPEND_TO_WIDGET = "extra_append_to_widget"
         const val EXTRA_WIDGET_ID = "extra_widget_id"
         const val EXTRA_URL = "extra_url"
@@ -141,7 +143,11 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                 val lineIndex = intent.getIntExtra(EXTRA_LINE_INDEX, -1)
                 if (lineIndex >= 0 && widgetId >= 0) {
                     val vaultManager = VaultManager(context, widgetId)
-                    vaultManager.toggleChecklistItem(lineIndex)
+                    vaultManager.toggleChecklistItem(
+                        lineIndex,
+                        intent.getStringExtra(EXTRA_EXPECTED_LINE).orEmpty(),
+                        intent.getStringExtra(EXTRA_EXPECTED_URI).orEmpty()
+                    )
                     val appWidgetManager = AppWidgetManager.getInstance(context)
                     updateWidget(context, appWidgetManager, widgetId)
                 }
