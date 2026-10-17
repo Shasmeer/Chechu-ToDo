@@ -22,7 +22,8 @@ class QuickCaptureActivity : AppCompatActivity() {
 
         vaultManager = VaultManager(this)
 
-        val appendToWidget = intent.getBooleanExtra(ObsidianWidgetProvider.EXTRA_APPEND_TO_WIDGET, false)
+        val isTodo = intent.getBooleanExtra(ObsidianWidgetProvider.EXTRA_CAPTURE_TODO, false) ||
+            intent.getBooleanExtra(ObsidianWidgetProvider.EXTRA_APPEND_TO_WIDGET, false)
         val widgetId = intent.getIntExtra(ObsidianWidgetProvider.EXTRA_WIDGET_ID, -1)
         val widgetVaultManager = if (widgetId >= 0) VaultManager(this, widgetId) else vaultManager
         val captureInput = findViewById<EditText>(R.id.capture_input)
@@ -31,7 +32,7 @@ class QuickCaptureActivity : AppCompatActivity() {
         val addToTopRow = findViewById<View>(R.id.capture_add_to_top_row)
         val sectionRow = findViewById<View>(R.id.capture_section_row)
         val sectionSpinner = findViewById<Spinner>(R.id.capture_section)
-        val headings = if (appendToWidget) widgetVaultManager.getNoteHeadings() else emptyList()
+        val headings = if (isTodo) widgetVaultManager.getNoteHeadings() else emptyList()
 
         if (headings.isNotEmpty()) {
             sectionRow.visibility = View.VISIBLE
@@ -53,10 +54,9 @@ class QuickCaptureActivity : AppCompatActivity() {
             addToTopToggle.isChecked = widgetVaultManager.addToTop
         }
 
-        if (appendToWidget) {
-            val noteName = widgetVaultManager.getWidgetTitle()
-            captureTitle.text = "Add to $noteName"
-            captureInput.hint = "One item per line..."
+        if (isTodo) {
+            captureTitle.text = "New To-Do"
+            captureInput.hint = "One task per line..."
             captureInput.inputType = android.text.InputType.TYPE_CLASS_TEXT or
                 android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
                 android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
@@ -64,7 +64,7 @@ class QuickCaptureActivity : AppCompatActivity() {
             captureInput.setSingleLine(false)
             captureInput.maxLines = 8
         } else {
-            captureTitle.text = "Quick Note"
+            captureTitle.text = "New Note"
             captureInput.hint = "Capture a thought..."
         }
 
@@ -84,15 +84,15 @@ class QuickCaptureActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val success = if (appendToWidget) {
+            val success = if (isTodo) {
                 widgetVaultManager.addToTop = addToTopToggle.isChecked
                 val headingLineIndex = headings
                     .getOrNull(sectionSpinner.selectedItemPosition - 1)
                     ?.lineIndex
-                widgetVaultManager.appendToWidgetNote(text, headingLineIndex)
+                widgetVaultManager.addWidgetTasks(text, headingLineIndex)
             } else {
                 vaultManager.addToTop = addToTopToggle.isChecked
-                vaultManager.appendToDailyNote(text)
+                widgetVaultManager.addWidgetNotes(text)
             }
             if (success) {
                 Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()

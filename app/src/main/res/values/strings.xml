@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Obsidian Widget</string>
-    <string name="widget_description">Show daily notes and quick capture for Obsidian</string>
+    <string name="app_name">Chechu ToDo</string>
+    <string name="widget_description">Today To-Do and Notes home-screen widget</string>
     <string name="widget_title">Daily Note</string>
     <string name="no_vault_selected">Tap to select your Obsidian vault</string>
     <string name="no_daily_note">No daily note found</string>
     <string name="quick_capture">Quick Capture</string>
     <string name="open_obsidian">Open Obsidian</string>
-    <string name="capture_hint">Type your note…</string>
+    <string name="capture_hint">Write your note…</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="select_vault">Select Vault Folder</string>
@@ -15,7 +15,7 @@
     <string name="save_widget">Save Widget</string>
     <string name="note_saved">Note saved!</string>
     <string name="error_saving">Error saving note</string>
-    <string name="setup_instructions">Add the Obsidian Widget to your home screen to see daily notes and quickly capture ideas.</string>
+    <string name="setup_instructions">Add Chechu ToDo to your home screen and connect your Obsidian vault to capture ideas.</string>
     <string name="select_vault_folder">Select Vault Folder</string>
     <string name="daily_notes_folder">Daily Notes Folder (optional)</string>
     <string name="daily_notes_hint">e.g. Daily Notes</string>

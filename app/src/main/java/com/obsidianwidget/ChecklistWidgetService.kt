@@ -24,10 +24,10 @@ class ChecklistRemoteViewsFactory(
     private var items = listOf<VaultManager.ChecklistItem>()
     private var tapCheckboxOnly = false
     private var themeColors = VaultManager.ThemeColors(
-        bg = 0xFF1A1A1E.toInt(),
-        text = 0xFFE8E6E3.toInt(),
-        textSecondary = 0xFF8B8B8F.toInt(),
-        accent = 0xFFD97757.toInt(),
+        bg = 0xFFFDFCFB.toInt(),
+        text = 0xFF1F2024.toInt(),
+        textSecondary = 0xFF777982.toInt(),
+        accent = 0xFFFF785C.toInt(),
         buttonText = 0xFFFFFFFF.toInt()
     )
 
@@ -83,7 +83,7 @@ class ChecklistRemoteViewsFactory(
 
     override fun onDataSetChanged() {
         val vaultManager = VaultManager(context, widgetId)
-        items = vaultManager.parseChecklist()
+        items = vaultManager.getVisibleItems()
         tapCheckboxOnly = vaultManager.tapCheckboxOnly
         themeColors = vaultManager.getThemeColors()
     }
@@ -137,9 +137,10 @@ class ChecklistRemoteViewsFactory(
             val displayText = if (item.isBullet) "•  ${item.text}" else item.text
             views.setTextViewText(R.id.text_item_content, markdownToHtml(displayText, themeColors.accent))
             views.setTextColor(R.id.text_item_content, themeColors.text)
+            views.setInt(R.id.text_item_root, "setBackgroundResource", if (themeColors.bg == 0xFF24252B.toInt()) R.drawable.today_row_dark else R.drawable.today_row)
             val density = context.resources.displayMetrics.density
             val indentPx = (item.indentLevel * 16 * density).toInt()
-            views.setViewPadding(R.id.text_item_root, indentPx + (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
+            views.setViewPadding(R.id.text_item_root, indentPx + (15 * density).toInt(), (12 * density).toInt(), (15 * density).toInt(), (12 * density).toInt())
             val url = extractFirstUrl(item.text)
             if (url != null) {
                 views.setOnClickFillInIntent(R.id.text_item_root, Intent().apply {
@@ -156,7 +157,8 @@ class ChecklistRemoteViewsFactory(
         // Always set padding (reset for non-indented, indent for nested)
         val density = context.resources.displayMetrics.density
         val indentPx = (item.indentLevel * 16 * density).toInt()
-        views.setViewPadding(R.id.checklist_item_root, indentPx + (4 * density).toInt(), (6 * density).toInt(), (4 * density).toInt(), (6 * density).toInt())
+        views.setViewPadding(R.id.checklist_item_root, indentPx + (13 * density).toInt(), (10 * density).toInt(), (13 * density).toInt(), (10 * density).toInt())
+        views.setInt(R.id.checklist_item_root, "setBackgroundResource", if (themeColors.bg == 0xFF24252B.toInt()) R.drawable.today_row_dark else R.drawable.today_row)
 
         // Set checkbox: circle bg tinted to accent/secondary, white checkmark overlay
         if (item.isChecked) {

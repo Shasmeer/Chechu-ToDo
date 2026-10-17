@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
@@ -26,6 +25,9 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         private const val ACTION_ADD = "com.obsidianwidget.ACTION_ADD"
         private const val ACTION_NAV_LEFT = "com.obsidianwidget.ACTION_NAV_LEFT"
         private const val ACTION_NAV_RIGHT = "com.obsidianwidget.ACTION_NAV_RIGHT"
+        private const val ACTION_TAB_TODO = "com.chechu.todo.ACTION_TAB_TODO"
+        private const val ACTION_TAB_NOTES = "com.chechu.todo.ACTION_TAB_NOTES"
+        const val EXTRA_CAPTURE_TODO = "capture_todo"
         const val EXTRA_LINE_INDEX = "extra_line_index"
         const val EXTRA_APPEND_TO_WIDGET = "extra_append_to_widget"
         const val EXTRA_WIDGET_ID = "extra_widget_id"
@@ -80,6 +82,7 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                 val addIntent = Intent(context, QuickCaptureActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     putExtra(EXTRA_APPEND_TO_WIDGET, true)
+                    putExtra(EXTRA_CAPTURE_TODO, true)
                     putExtra(EXTRA_WIDGET_ID, widgetId)
                 }
                 context.startActivity(addIntent)
@@ -108,6 +111,16 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                     vaultManager.toggleChecklistItem(lineIndex)
                     val appWidgetManager = AppWidgetManager.getInstance(context)
                     updateWidget(context, appWidgetManager, widgetId)
+                }
+            }
+            ACTION_TAB_TODO, ACTION_TAB_NOTES -> {
+                performHaptic(context)
+                val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
+                if (widgetId >= 0) {
+                    VaultManager(context, widgetId).widgetTab =
+                        if (intent.action == ACTION_TAB_TODO) VaultManager.WidgetTab.TODO
+                        else VaultManager.WidgetTab.NOTES
+                    updateWidget(context, AppWidgetManager.getInstance(context), widgetId)
                 }
             }
             ACTION_NAV_LEFT, ACTION_NAV_RIGHT -> {
@@ -144,38 +157,42 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, R.layout.widget_layout)
         val vaultManager = VaultManager(context, appWidgetId)
 
-        // Set title based on mode
-        val noteCount = if (vaultManager.noteMode == VaultManager.NoteMode.PINNED) vaultManager.getPinnedNoteCount() else 0
-        views.setTextViewText(R.id.widget_date, vaultManager.getWidgetTitle())
+        // Independent To-Do and Notes tabs. Existing Markdown files are never migrated
+        // or rewritten just for presentation.
+        val noteCount = if (vaultManager.noteMode == VaultManager.NoteMode.PINNED)
+            vaultManager.getPinnedNoteCount() else 0
+        val selectedTab = vaultManager.widgetTab
+        val visibleItems = vaultManager.getVisibleItems()
+        val allTaskItems = vaultManager.parseChecklist().filter { !it.isPlainText }
+        val remaining = allTaskItems.count { !it.isChecked }
+        views.setTextViewText(R.id.widget_date, "Today")
+        views.setTextViewText(
+            R.id.widget_todo_count,
+            if (selectedTab == VaultManager.WidgetTab.TODO) {
+                if (allTaskItems.isEmpty()) "Stay organized"
+                else "$remaining of ${allTaskItems.size} to-dos remaining"
+            } else "Your notes, beautifully kept"
+        )
+        views.setViewVisibility(R.id.widget_todo_count, View.VISIBLE)
 
-        // Check if note has checklist items
-        val allItems = vaultManager.parseChecklist()
-        val hasChecklist = allItems.any { !it.isPlainText }
-        val hasProperties = allItems.any { it.propertyName != null }
+        val todoActive = selectedTab == VaultManager.WidgetTab.TODO
+        views.setInt(R.id.widget_tab_todo, "setBackgroundResource",
+            if (todoActive) R.drawable.today_segment_active else R.drawable.today_segment_inactive)
+        views.setInt(R.id.widget_tab_notes, "setBackgroundResource",
+            if (!todoActive) R.drawable.today_segment_active else R.drawable.today_segment_inactive)
+        views.setTextColor(R.id.widget_tab_todo, if (todoActive) 0xFF202125.toInt() else 0xFF777982.toInt())
+        views.setTextColor(R.id.widget_tab_notes, if (!todoActive) 0xFF202125.toInt() else 0xFF777982.toInt())
+        views.setOnClickPendingIntent(R.id.widget_tab_todo, createActionIntent(context, ACTION_TAB_TODO, appWidgetId))
+        views.setOnClickPendingIntent(R.id.widget_tab_notes, createActionIntent(context, ACTION_TAB_NOTES, appWidgetId))
 
-        // Show TODO count if enabled
-        if (vaultManager.showTodoCount && hasChecklist) {
-            val unchecked = allItems.count { !it.isPlainText && !it.isChecked }
-            val total = allItems.count { !it.isPlainText }
-            views.setTextViewText(R.id.widget_todo_count, "$unchecked of $total remaining")
-            views.setViewVisibility(R.id.widget_todo_count, View.VISIBLE)
-        } else {
-            views.setViewVisibility(R.id.widget_todo_count, View.GONE)
-        }
-
-        if (hasChecklist || hasProperties) {
-            // Show parsed checklist and property rows
+        if (visibleItems.isNotEmpty()) {
             views.setViewVisibility(R.id.widget_checklist, View.VISIBLE)
             views.setViewVisibility(R.id.widget_note_preview, View.GONE)
-
-            // Set up RemoteViews adapter for ListView
             val serviceIntent = Intent(context, ChecklistWidgetService::class.java).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                 data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
             }
             views.setRemoteAdapter(R.id.widget_checklist, serviceIntent)
-
-            // Set up pending intent template for item clicks (toggle)
             val toggleIntent = Intent(context, ObsidianWidgetProvider::class.java).apply {
                 action = ACTION_TOGGLE
                 putExtra(EXTRA_WIDGET_ID, appWidgetId)
@@ -185,31 +202,14 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
             views.setPendingIntentTemplate(R.id.widget_checklist, togglePendingIntent)
-
-            // Notify data changed
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_checklist)
-
         } else {
-            // Show plain text preview
             views.setViewVisibility(R.id.widget_checklist, View.GONE)
             views.setViewVisibility(R.id.widget_note_preview, View.VISIBLE)
-
-            if (vaultManager.isVaultConfigured || vaultManager.noteMode == VaultManager.NoteMode.PINNED) {
-                val noteContent = vaultManager.readWidgetNoteForDisplay()
-                val preview = noteContent?.take(500) ?: context.getString(R.string.no_daily_note)
-                views.setTextViewText(
-                    R.id.widget_note_preview,
-                    ChecklistRemoteViewsFactory.markdownToHtml(
-                        preview,
-                        vaultManager.getThemeColors().accent
-                    )
-                )
-            } else {
-                views.setTextViewText(
-                    R.id.widget_note_preview,
-                    context.getString(R.string.no_vault_selected)
-                )
-            }
+            val message = if (!vaultManager.isVaultConfigured) "Connect your Obsidian vault in settings"
+            else if (todoActive) "No to-dos yet. Tap + To-Do to begin."
+            else "No notes yet. Tap Note to capture one."
+            views.setTextViewText(R.id.widget_note_preview, message)
         }
 
         // Add to note button
@@ -281,12 +281,12 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         )
 
         // Apply widget transparency
-        views.setFloat(R.id.widget_root, "setAlpha", vaultManager.widgetAlpha / 100f)
+        views.setFloat(R.id.widget_glass_surface, "setAlpha", vaultManager.widgetAlpha / 100f)
 
         // Apply theme colors
         val colors = vaultManager.getThemeColors()
         val isDark = vaultManager.isDarkTheme()
-        views.setInt(R.id.widget_root, "setBackgroundResource",
+        views.setInt(R.id.widget_glass_surface, "setBackgroundResource",
             if (isDark) R.drawable.widget_background else R.drawable.widget_background_light)
         views.setTextColor(R.id.widget_date, colors.text)
         views.setTextColor(R.id.widget_note_preview, colors.textSecondary)
@@ -297,12 +297,12 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         views.setInt(R.id.widget_settings, "setColorFilter", colors.text)
         views.setInt(R.id.widget_cycle_note, "setColorFilter", colors.text)
 
-        // Tint accent-colored buttons (preserves rounded drawable shape)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val accentTint = ColorStateList.valueOf(colors.accent)
-            views.setColorStateList(R.id.widget_btn_capture, "setBackgroundTintList", accentTint)
-            views.setColorStateList(R.id.widget_add, "setBackgroundTintList", accentTint)
-        }
+        // Neutral translucent glass buttons; adjust foreground for dark/light themes.
+        // Accent remains on task checkboxes and Markdown links.
+        views.setTextColor(R.id.widget_add_label, 0xFFFFFFFF.toInt())
+        views.setTextColor(R.id.widget_capture_label, colors.text)
+        views.setInt(R.id.widget_add_icon, "setColorFilter", 0xFFFFFFFF.toInt())
+        views.setInt(R.id.widget_capture_icon, "setColorFilter", colors.text)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
