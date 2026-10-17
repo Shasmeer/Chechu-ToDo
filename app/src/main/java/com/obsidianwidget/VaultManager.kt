@@ -36,7 +36,8 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         val isBullet: Boolean = false,
         val isHorizontalRule: Boolean = false,
         val indentLevel: Int = 0,
-        val propertyName: String? = null
+        val propertyName: String? = null,
+        val rawLine: String = ""
     )
 
     companion object {
@@ -682,7 +683,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
                 val indentLevel = indent.count { it == ' ' } / 2 + indent.count { it == '\t' }
                 val checked = match.groupValues[2].lowercase() == "x"
                 val text = match.groupValues[3].trim()
-                items.add(ChecklistItem(lineIndex = index, text = text, isChecked = checked, indentLevel = indentLevel))
+                items.add(ChecklistItem(lineIndex = index, text = text, isChecked = checked, indentLevel = indentLevel, rawLine = line))
             } else if (line.trim() == "---") {
                 items.add(ChecklistItem(lineIndex = index, text = "", isChecked = false, isPlainText = true, isHorizontalRule = true))
             } else if (headingMatch != null) {
@@ -758,24 +759,20 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
     /**
      * Toggle a checklist item by its line index in the current widget note.
      */
-    fun toggleChecklistItem(lineIndex: Int): Boolean {
-        val noteUri = getWidgetNoteUri() ?: return false
-        val content = readFileContent(noteUri) ?: return false
-        val lines = content.lines().toMutableList()
-
-        if (lineIndex < 0 || lineIndex >= lines.size) return false
-
-        val line = lines[lineIndex]
-        val match = CHECKLIST_REGEX.matchEntire(line) ?: return false
-
-        val indent = match.groupValues[1]
-        val currentState = match.groupValues[2]
-        val text = match.groupValues[3]
-
-        val newState = if (currentState.lowercase() == "x") " " else "x"
-        lines[lineIndex] = "$indent- [$newState] $text"
-
-        return writeFileContent(noteUri, lines.joinToString("\n"))
+    /** Refuse stale SAF/Markdown line actions; legacy files remain otherwise unchanged. */
+    fun toggleChecklistItem(lineIndex: Int, expectedRawLine: String, expectedUri: String): Boolean {
+        val uri = getWidgetNoteUri() ?: return false
+        if (uri.toString() != expectedUri || expectedRawLine.isBlank()) return false
+        val original = readFileContent(uri) ?: return false
+        val lines = original.lines().toMutableList()
+        val raw = lines.getOrNull(lineIndex) ?: return false
+        if (raw != expectedRawLine) return false
+        val match = CHECKLIST_REGEX.matchEntire(raw) ?: return false
+        val state = if (match.groupValues[2].equals("x", ignoreCase = true)) " " else "x"
+        lines[lineIndex] = "${match.groupValues[1]}- [$state] ${match.groupValues[3]}"
+        // Best-effort recheck: arbitrary SAF document providers cannot guarantee atomic compare-and-swap.
+        if (readFileContent(uri) != original) return false
+        return writeFileContent(uri, lines.joinToString("\n"))
     }
 
     /**
