@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - main
+      - feature/today-widget-redesign-v2
   workflow_dispatch:
 
 permissions:
