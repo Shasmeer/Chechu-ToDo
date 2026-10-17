@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         text = content
         textSize = size.toFloat()
         setTextColor(color)
-        fontFamily = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.NORMAL)
+        typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.NORMAL)
     }
 
     private fun card(): LinearLayout = LinearLayout(this).apply {
