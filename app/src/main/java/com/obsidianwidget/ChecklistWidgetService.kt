@@ -6,6 +6,9 @@ import android.graphics.Paint
 import android.text.Html
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import com.obsidianwidget.local.ChechuRepository
+import com.obsidianwidget.local.TaskRecord
+import com.obsidianwidget.local.NoteRecord
 
 class ChecklistWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
@@ -22,6 +25,10 @@ class ChecklistRemoteViewsFactory(
 ) : RemoteViewsService.RemoteViewsFactory {
 
     private var items = listOf<VaultManager.ChecklistItem>()
+    private var localMode = false
+    private var localTasks = listOf<TaskRecord>()
+    private var localNotes = listOf<NoteRecord>()
+    private var showingLocalTasks = true
     private var tapCheckboxOnly = false
     private var themeColors = VaultManager.ThemeColors(
         bg = 0xFFFDFCFB.toInt(),
@@ -83,18 +90,34 @@ class ChecklistRemoteViewsFactory(
 
     override fun onDataSetChanged() {
         val vaultManager = VaultManager(context, widgetId)
-        items = vaultManager.getVisibleItems()
-        tapCheckboxOnly = vaultManager.tapCheckboxOnly
+        localMode = vaultManager.useLocalData
+        showingLocalTasks = vaultManager.widgetTab == VaultManager.WidgetTab.TODO
         themeColors = vaultManager.getThemeColors()
+        if (localMode) {
+            val repo = ChechuRepository(context)
+            localTasks = if (showingLocalTasks) repo.tasks() else emptyList()
+            localNotes = if (!showingLocalTasks) repo.notes() else emptyList()
+            items = emptyList()
+        } else {
+            items = vaultManager.getVisibleItems()
+            tapCheckboxOnly = vaultManager.tapCheckboxOnly
+            localTasks = emptyList()
+            localNotes = emptyList()
+        }
     }
 
     override fun onDestroy() {
         items = emptyList()
+        localTasks = emptyList()
+        localNotes = emptyList()
     }
 
-    override fun getCount(): Int = items.size
+    override fun getCount(): Int =
+        if (localMode) { if (showingLocalTasks) localTasks.size else localNotes.size }
+        else items.size
 
     override fun getViewAt(position: Int): RemoteViews {
+        if (localMode) return localViewAt(position)
         val item = items[position]
 
         if (item.propertyName != null) {
@@ -185,6 +208,8 @@ class ChecklistRemoteViewsFactory(
         // Fill-in intent for toggling this item
         val fillIntent = Intent().apply {
             putExtra(ObsidianWidgetProvider.EXTRA_LINE_INDEX, item.lineIndex)
+            putExtra(ObsidianWidgetProvider.EXTRA_EXPECTED_LINE, item.rawLine)
+            putExtra(ObsidianWidgetProvider.EXTRA_EXPECTED_URI, VaultManager(context, widgetId).getWidgetNoteUri()?.toString().orEmpty())
             putExtra(ObsidianWidgetProvider.EXTRA_WIDGET_ID, widgetId)
         }
         if (tapCheckboxOnly) {
@@ -204,8 +229,65 @@ class ChecklistRemoteViewsFactory(
         return views
     }
 
+    private fun localViewAt(position: Int): RemoteViews {
+        if (!showingLocalTasks) {
+            val note = localNotes[position]
+            val views = RemoteViews(context.packageName, R.layout.widget_text_item)
+            val preview = note.body.take(240)
+            views.setTextViewText(R.id.text_item_content,
+                if (preview.isBlank()) note.title else note.title + "\n" + preview)
+            views.setTextColor(R.id.text_item_content, themeColors.text)
+            views.setInt(R.id.text_item_root, "setBackgroundResource",
+                if (themeColors.bg == 0xFF24252B.toInt()) R.drawable.today_row_dark else R.drawable.today_row)
+            val intent = Intent().apply {
+                putExtra(ObsidianWidgetProvider.EXTRA_LOCAL_ID, note.id)
+                putExtra(ObsidianWidgetProvider.EXTRA_LOCAL_EDIT, true)
+                putExtra(ObsidianWidgetProvider.EXTRA_LOCAL_NOTE, true)
+                putExtra(ObsidianWidgetProvider.EXTRA_WIDGET_ID, widgetId)
+            }
+            views.setOnClickFillInIntent(R.id.text_item_root, intent)
+            return views
+        }
+        val task = localTasks[position]
+        val views = RemoteViews(context.packageName, R.layout.widget_checklist_item)
+        views.setInt(R.id.checklist_item_root, "setBackgroundResource",
+            if (themeColors.bg == 0xFF24252B.toInt()) R.drawable.today_row_dark else R.drawable.today_row)
+        views.setImageViewResource(
+            R.id.checklist_checkbox_bg,
+            if (task.completed) R.drawable.ic_checkbox_checked else R.drawable.ic_checkbox_unchecked
+        )
+        views.setInt(R.id.checklist_checkbox_bg, "setColorFilter",
+            if (task.completed) themeColors.accent else themeColors.textSecondary)
+        views.setViewVisibility(R.id.checklist_checkbox_mark,
+            if (task.completed) android.view.View.VISIBLE else android.view.View.GONE)
+        val repeat = if (task.repeatRule == "NONE") "" else " ↻ " + task.repeatRule.lowercase()
+        val due = task.dueEpochDay?.let { " · " + java.time.LocalDate.ofEpochDay(it).toString() } ?: ""
+        val sub = task.details.takeIf { it.isNotBlank() }?.let { "\n" + it.take(105) } ?: ""
+        views.setTextViewText(R.id.checklist_text, task.title + repeat + due + sub)
+        views.setTextColor(R.id.checklist_text,
+            if (task.completed) themeColors.textSecondary else themeColors.text)
+        views.setInt(R.id.checklist_text, "setPaintFlags",
+            if (task.completed) Paint.STRIKE_THRU_TEXT_FLAG or Paint.ANTI_ALIAS_FLAG
+            else Paint.ANTI_ALIAS_FLAG)
+        val edit = Intent().apply {
+            putExtra(ObsidianWidgetProvider.EXTRA_LOCAL_ID, task.id)
+            putExtra(ObsidianWidgetProvider.EXTRA_LOCAL_EDIT, true)
+            putExtra(ObsidianWidgetProvider.EXTRA_WIDGET_ID, widgetId)
+        }
+        val toggle = Intent().apply {
+            putExtra(ObsidianWidgetProvider.EXTRA_LOCAL_ID, task.id)
+            putExtra(ObsidianWidgetProvider.EXTRA_WIDGET_ID, widgetId)
+        }
+        views.setOnClickFillInIntent(R.id.checklist_item_root, edit)
+        views.setOnClickFillInIntent(R.id.checklist_checkbox, toggle)
+        return views
+    }
+
     override fun getLoadingView(): RemoteViews? = null
     override fun getViewTypeCount(): Int = 5
-    override fun getItemId(position: Int): Long = items[position].lineIndex.toLong()
+    override fun getItemId(position: Int): Long =
+        if (localMode) {
+            (if (showingLocalTasks) localTasks[position].id else localNotes[position].id).hashCode().toLong()
+        } else items[position].lineIndex.toLong()
     override fun hasStableIds(): Boolean = true
 }

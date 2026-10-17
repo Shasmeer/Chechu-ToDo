@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.Color
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -14,6 +15,7 @@ import android.os.VibratorManager
 import android.provider.DocumentsContract
 import android.view.View
 import android.widget.RemoteViews
+import com.obsidianwidget.local.ChechuRepository
 
 class ObsidianWidgetProvider : AppWidgetProvider() {
 
@@ -28,7 +30,12 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         private const val ACTION_TAB_TODO = "com.chechu.todo.ACTION_TAB_TODO"
         private const val ACTION_TAB_NOTES = "com.chechu.todo.ACTION_TAB_NOTES"
         const val EXTRA_CAPTURE_TODO = "capture_todo"
+        const val EXTRA_LOCAL_ID = "v3_local_item_id"
+        const val EXTRA_LOCAL_EDIT = "v3_local_edit"
+        const val EXTRA_LOCAL_NOTE = "v3_local_note"
         const val EXTRA_LINE_INDEX = "extra_line_index"
+        const val EXTRA_EXPECTED_LINE = "extra_expected_line"
+        const val EXTRA_EXPECTED_URI = "extra_expected_uri"
         const val EXTRA_APPEND_TO_WIDGET = "extra_append_to_widget"
         const val EXTRA_WIDGET_ID = "extra_widget_id"
         const val EXTRA_URL = "extra_url"
@@ -70,6 +77,10 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
             ACTION_CAPTURE -> {
                 performHaptic(context)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
+                if (widgetId >= 0 && VaultManager(context, widgetId).useLocalData) {
+                    launchLocalEditor(context, MainActivity.EXTRA_CREATE_NOTE)
+                    return
+                }
                 val captureIntent = Intent(context, QuickCaptureActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     putExtra(EXTRA_WIDGET_ID, widgetId)
@@ -79,6 +90,10 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
             ACTION_ADD -> {
                 performHaptic(context)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
+                if (widgetId >= 0 && VaultManager(context, widgetId).useLocalData) {
+                    launchLocalEditor(context, MainActivity.EXTRA_CREATE_TASK)
+                    return
+                }
                 val addIntent = Intent(context, QuickCaptureActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     putExtra(EXTRA_APPEND_TO_WIDGET, true)
@@ -90,7 +105,11 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
             ACTION_OPEN -> {
                 performHaptic(context)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
-                openObsidian(context, widgetId)
+                if (widgetId >= 0 && VaultManager(context, widgetId).useLocalData) {
+                    context.startActivity(Intent(context, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    })
+                } else openObsidian(context, widgetId)
             }
             ACTION_TOGGLE -> {
                 performHaptic(context)
@@ -104,11 +123,31 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
                     } catch (_: Exception) { }
                     return
                 }
-                val lineIndex = intent.getIntExtra(EXTRA_LINE_INDEX, -1)
                 val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
+                val localId = intent.getStringExtra(EXTRA_LOCAL_ID)
+                if (localId != null && widgetId >= 0 && VaultManager(context, widgetId).useLocalData) {
+                    if (intent.getBooleanExtra(EXTRA_LOCAL_EDIT, false)) {
+                        val isNote = intent.getBooleanExtra(EXTRA_LOCAL_NOTE, false)
+                        context.startActivity(Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            putExtra(if (isNote) MainActivity.EXTRA_OPEN_NOTE_ID else MainActivity.EXTRA_OPEN_TASK_ID, localId)
+                        })
+                    } else {
+                        Thread {
+                            val saved = try { ChechuRepository(context).toggleTask(localId) } catch (_: Exception) { false }
+                            if (saved) updateAllWidgets(context)
+                        }.start()
+                    }
+                    return
+                }
+                val lineIndex = intent.getIntExtra(EXTRA_LINE_INDEX, -1)
                 if (lineIndex >= 0 && widgetId >= 0) {
                     val vaultManager = VaultManager(context, widgetId)
-                    vaultManager.toggleChecklistItem(lineIndex)
+                    vaultManager.toggleChecklistItem(
+                        lineIndex,
+                        intent.getStringExtra(EXTRA_EXPECTED_LINE).orEmpty(),
+                        intent.getStringExtra(EXTRA_EXPECTED_URI).orEmpty()
+                    )
                     val appWidgetManager = AppWidgetManager.getInstance(context)
                     updateWidget(context, appWidgetManager, widgetId)
                 }
@@ -136,6 +175,13 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         }
     }
 
+    private fun launchLocalEditor(context: Context, extra: String) {
+        context.startActivity(Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(extra, true)
+        })
+    }
+
     private fun performHaptic(context: Context) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(VibratorManager::class.java)?.defaultVibrator
@@ -156,6 +202,11 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_layout)
         val vaultManager = VaultManager(context, appWidgetId)
+        if (vaultManager.useLocalData) {
+            // Android's widget callback runs on the main thread. Room operations do not.
+            Thread { updateLocalWidget(context.applicationContext, appWidgetManager, appWidgetId) }.start()
+            return
+        }
 
         // Independent To-Do and Notes tabs. Existing Markdown files are never migrated
         // or rewritten just for presentation.
@@ -305,6 +356,95 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
         views.setInt(R.id.widget_capture_icon, "setColorFilter", colors.text)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
+    }
+
+    private fun updateLocalWidget(
+        context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int
+    ) {
+        val vaultManager = VaultManager(context, appWidgetId)
+        if (!vaultManager.useLocalData) return
+        val data = try { ChechuRepository(context) } catch (_: Exception) { return }
+        val tasks = try { data.tasks() } catch (_: Exception) { return }
+        val notes = try { data.notes() } catch (_: Exception) { return }
+        val selectedTab = vaultManager.widgetTab
+        val showingTasks = selectedTab == VaultManager.WidgetTab.TODO
+        val views = RemoteViews(context.packageName, R.layout.widget_layout)
+        val colors = vaultManager.getThemeColors()
+        val remaining = tasks.count { !it.completed }
+        views.setTextViewText(R.id.widget_date, "Today")
+        views.setTextViewText(
+            R.id.widget_todo_count,
+            if (showingTasks) "$remaining to-dos remaining" else "${notes.size} notes"
+        )
+        views.setViewVisibility(R.id.widget_todo_count, View.VISIBLE)
+        views.setViewVisibility(R.id.widget_cycle_note, View.GONE)
+        views.setTextColor(R.id.widget_date, colors.text)
+        views.setTextColor(R.id.widget_todo_count, colors.textSecondary)
+        views.setTextColor(R.id.widget_note_preview, colors.textSecondary)
+        val dark = vaultManager.isDarkTheme()
+        views.setInt(R.id.widget_glass_surface, "setBackgroundResource",
+            if (dark) R.drawable.widget_background else R.drawable.widget_background_light)
+        views.setFloat(R.id.widget_glass_surface, "setAlpha", 1f)
+        views.setInt(R.id.widget_tab_todo, "setBackgroundResource",
+            if (showingTasks) R.drawable.today_segment_active else R.drawable.today_segment_inactive)
+        views.setInt(R.id.widget_tab_notes, "setBackgroundResource",
+            if (!showingTasks) R.drawable.today_segment_active else R.drawable.today_segment_inactive)
+        views.setTextColor(R.id.widget_tab_todo, if (showingTasks) 0xFF202125.toInt() else 0xFF777982.toInt())
+        views.setTextColor(R.id.widget_tab_notes, if (!showingTasks) 0xFF202125.toInt() else 0xFF777982.toInt())
+        views.setOnClickPendingIntent(R.id.widget_tab_todo, createActionIntent(context, ACTION_TAB_TODO, appWidgetId))
+        views.setOnClickPendingIntent(R.id.widget_tab_notes, createActionIntent(context, ACTION_TAB_NOTES, appWidgetId))
+
+        val hasRows = if (showingTasks) tasks.isNotEmpty() else notes.isNotEmpty()
+        if (hasRows) {
+            views.setViewVisibility(R.id.widget_checklist, View.VISIBLE)
+            views.setViewVisibility(R.id.widget_note_preview, View.GONE)
+            val serviceIntent = Intent(context, ChecklistWidgetService::class.java).apply {
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                setData(Uri.parse("chechu://local/" + appWidgetId + "/" + selectedTab.name))
+            }
+            views.setRemoteAdapter(R.id.widget_checklist, serviceIntent)
+            val toggleIntent = Intent(context, ObsidianWidgetProvider::class.java).apply {
+                action = ACTION_TOGGLE
+                putExtra(EXTRA_WIDGET_ID, appWidgetId)
+            }
+            val template = PendingIntent.getBroadcast(
+                context, appWidgetId, toggleIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            )
+            views.setPendingIntentTemplate(R.id.widget_checklist, template)
+        } else {
+            views.setViewVisibility(R.id.widget_checklist, View.GONE)
+            views.setViewVisibility(R.id.widget_note_preview, View.VISIBLE)
+            views.setTextViewText(
+                R.id.widget_note_preview,
+                if (showingTasks) "No to-dos yet. Tap + To-Do to begin."
+                else "No notes yet. Tap Note to capture one."
+            )
+        }
+        views.setOnClickPendingIntent(R.id.widget_add, createActionIntent(context, ACTION_ADD, appWidgetId))
+        views.setOnClickPendingIntent(R.id.widget_btn_capture, createActionIntent(context, ACTION_CAPTURE, appWidgetId))
+        views.setOnClickPendingIntent(R.id.widget_refresh, createActionIntent(context, ACTION_REFRESH, appWidgetId))
+        views.setOnClickPendingIntent(R.id.widget_date, createActionIntent(context, ACTION_OPEN, appWidgetId))
+        views.setOnClickPendingIntent(R.id.widget_root, createActionIntent(context, ACTION_REFRESH, appWidgetId))
+        val configIntent = Intent(context, WidgetConfigActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+        views.setOnClickPendingIntent(R.id.widget_settings,
+            PendingIntent.getActivity(context, appWidgetId + 10000, configIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+        for (icon in listOf(R.id.widget_refresh, R.id.widget_settings)) {
+            views.setInt(icon, "setColorFilter", colors.text)
+        }
+        views.setTextColor(R.id.widget_add_label, Color.WHITE)
+        views.setTextColor(R.id.widget_capture_label, colors.text)
+        views.setInt(R.id.widget_add_icon, "setColorFilter", Color.WHITE)
+        views.setInt(R.id.widget_capture_icon, "setColorFilter", colors.text)
+        views.setViewVisibility(R.id.widget_add, View.VISIBLE)
+        views.setViewVisibility(R.id.widget_btn_capture, View.VISIBLE)
+        views.setViewVisibility(R.id.widget_button_bar, View.VISIBLE)
+        appWidgetManager.updateAppWidget(appWidgetId, views)
+        if (hasRows) appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_checklist)
     }
 
     private fun createActionIntent(context: Context, action: String, appWidgetId: Int): PendingIntent {

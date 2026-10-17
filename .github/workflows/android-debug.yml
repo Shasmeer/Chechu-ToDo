@@ -8,10 +8,15 @@ on:
   pull_request:
     branches:
       - main
+      - feature/today-widget-redesign-v2
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: chechu-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   android-debug:
@@ -39,10 +44,10 @@ jobs:
       - name: Install Android API 34
         run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Build debug APK
+      - name: Run recurrence unit tests and build debug APK
         run: |
           chmod +x ./gradlew
-          ./gradlew :app:assembleDebug --no-daemon --stacktrace
+          ./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

@@ -97,10 +97,11 @@ class QuickCaptureActivity : AppCompatActivity() {
             if (success) {
                 Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
                 ObsidianWidgetProvider.updateAllWidgets(this)
+                finish()
             } else {
-                Toast.makeText(this, R.string.error_saving, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.error_saving, Toast.LENGTH_LONG).show()
+                // Retain entered content when Android denies vault file access.
             }
-            finish()
         }
 
         // Handle shared text from other apps
