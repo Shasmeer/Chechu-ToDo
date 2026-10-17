@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
         val settings = label("⚙", 23f).apply {
             gravity = Gravity.CENTER
             contentDescription = "Legacy vault settings"
-            setBackground(surface(pale, 16)
+            setBackground(surface(pale, 16))
             setOnClickListener {
                 val ids = AppWidgetManager.getInstance(this@MainActivity).getAppWidgetIds(
                     ComponentName(this@MainActivity, ObsidianWidgetProvider::class.java))
@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity() {
         top.addView(settings, LinearLayout.LayoutParams(dp(46), dp(46)))
         main.addView(top)
         val tabs = horizontal().apply {
-            setBackground(surface(Color.rgb(239, 238, 237), 23)
+            setBackground(surface(Color.rgb(239, 238, 237), 23))
             setPadding(dp(4), dp(4), dp(4), dp(4))
         }
         tabTasks = label("To-Do", 14f, true).apply {
@@ -203,7 +203,7 @@ class MainActivity : AppCompatActivity() {
         background.addView(scroller, LinearLayout.LayoutParams(-1, 0, 1f))
         addAction = label("+   Add To-Do", 16f, true, Color.WHITE).apply {
             gravity = Gravity.CENTER
-            setBackground(surface(coral, 25)
+            setBackground(surface(coral, 25))
             setOnClickListener {
                 if (notesMode) editNote(null) else editTask(null)
             }
