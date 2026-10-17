@@ -15,6 +15,7 @@ Move beyond the V2 single Markdown-file widget into an offline, editable product
 ## Storage
 Room database `chechu_v3.db`: `tasks`, `notes`, `task_completions`.
 - PKs are random UUIDs; never use Markdown line numbers as V3 identifiers.
+- Tasks and notes carry revision numbers so an editor can detect and reject stale writes rather than silently overwriting newer edits.
 - Archived and deleted records are retained, excluded from active lists.
 - Purge requires an explicit confirmation and only applies to already-trashed records.
 - All database I/O is off the main thread, using a single worker in MainActivity and an asynchronous launcher-update path.
