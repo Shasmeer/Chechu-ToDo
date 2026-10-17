@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/chechu-liquid-glass-v1
+      - feature/today-widget-redesign-v2
   pull_request:
     branches:
       - main
