@@ -272,7 +272,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
      */
     var useLocalData: Boolean
         get() = prefs.getBoolean(wk("v3_use_local_data"), !isVaultConfigured)
-        set(value) = prefs.edit().putBoolean(wk("v3_use_local_data"), value).commit()
+        set(value) { prefs.edit().putBoolean(wk("v3_use_local_data"), value).commit() }
 
     var widgetTab: WidgetTab
         get() = if (prefs.getString(wk(KEY_WIDGET_TAB), "TODO") == "NOTES") WidgetTab.NOTES else WidgetTab.TODO
