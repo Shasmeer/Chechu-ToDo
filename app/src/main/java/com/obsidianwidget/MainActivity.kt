@@ -23,6 +23,12 @@ import java.util.concurrent.Executors
  * Legacy Obsidian notes remain available through the original widget settings.
  */
 class MainActivity : AppCompatActivity() {
+    companion object {
+        const val EXTRA_OPEN_TASK_ID = "v3_open_task_id"
+        const val EXTRA_OPEN_NOTE_ID = "v3_open_note_id"
+        const val EXTRA_CREATE_TASK = "v3_create_task"
+        const val EXTRA_CREATE_NOTE = "v3_create_note"
+    }
     private val worker = Executors.newSingleThreadExecutor()
     private lateinit var repository: ChechuRepository
     private lateinit var listContainer: LinearLayout
@@ -45,6 +51,37 @@ class MainActivity : AppCompatActivity() {
         repository = ChechuRepository(this)
         buildScreen()
         refresh()
+        handleLaunch(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleLaunch(intent)
+    }
+
+    private fun handleLaunch(intent: Intent?) {
+        if (intent == null) return
+        val taskId = intent.getStringExtra(EXTRA_OPEN_TASK_ID)
+        val noteId = intent.getStringExtra(EXTRA_OPEN_NOTE_ID)
+        val newTask = intent.getBooleanExtra(EXTRA_CREATE_TASK, false)
+        val newNote = intent.getBooleanExtra(EXTRA_CREATE_NOTE, false)
+        intent.removeExtra(EXTRA_OPEN_TASK_ID)
+        intent.removeExtra(EXTRA_OPEN_NOTE_ID)
+        intent.removeExtra(EXTRA_CREATE_TASK)
+        intent.removeExtra(EXTRA_CREATE_NOTE)
+        when {
+            taskId != null -> worker.execute {
+                val item = repository.getTask(taskId)
+                runOnUiThread { if (!isFinishing && item != null) editTask(item) }
+            }
+            noteId != null -> worker.execute {
+                val item = repository.getNote(noteId)
+                runOnUiThread { if (!isFinishing && item != null) editNote(item) }
+            }
+            newTask -> editTask(null)
+            newNote -> editNote(null)
+        }
     }
 
     override fun onResume() {
