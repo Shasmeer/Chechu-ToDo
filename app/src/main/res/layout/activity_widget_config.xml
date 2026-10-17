@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/obsidian_bg"
+    android:background="@drawable/app_ambient_background"
     android:orientation="vertical">
 
     <ScrollView
@@ -23,17 +23,17 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Configure Widget"
+                android:text="Make it yours"
                 android:textColor="@color/obsidian_text"
-                android:textSize="22sp"
+                android:textSize="27sp"
                 android:fontFamily="sans-serif-medium"
-                android:layout_marginBottom="20dp" />
+                android:layout_marginBottom="26dp" />
 
             <!-- ===== NOTE SOURCE ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="NOTE SOURCE"
+                android:text="01 · CONNECT YOUR NOTES"
                 android:textColor="@color/obsidian_primary"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-medium"
