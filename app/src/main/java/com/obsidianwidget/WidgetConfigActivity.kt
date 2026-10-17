@@ -40,7 +40,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     private lateinit var showTodoCountToggle: Switch
     private lateinit var dateFormatInput: EditText
     private lateinit var themeGroup: RadioGroup
-    private var selectedAccentColor: String = "#4A9EF5"
+    private var selectedAccentColor: String = "#FF785C"
     private val colorSwatchIds = listOf(
         R.id.color_terracotta, R.id.color_purple, R.id.color_blue, R.id.color_green,
         R.id.color_red, R.id.color_teal, R.id.color_pink, R.id.color_amber
