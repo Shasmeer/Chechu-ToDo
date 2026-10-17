@@ -23,6 +23,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     private var isPickerOpen = false
     private lateinit var vaultManager: VaultManager
+    private lateinit var localDataToggle: Switch
     private lateinit var vaultPathText: TextView
     private lateinit var dailyFolderInput: EditText
     private lateinit var noteModeGroup: RadioGroup
@@ -85,6 +86,8 @@ class WidgetConfigActivity : AppCompatActivity() {
         })
 
         vaultManager = VaultManager(this, appWidgetId)
+        localDataToggle = findViewById(R.id.config_local_data)
+        localDataToggle.isChecked = vaultManager.useLocalData
         vaultPathText = findViewById(R.id.config_vault_path)
         dailyFolderInput = findViewById(R.id.config_daily_folder)
         noteModeGroup = findViewById(R.id.config_note_mode_group)
@@ -299,6 +302,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     }
 
     private fun saveAndFinish() {
+        vaultManager.useLocalData = localDataToggle.isChecked
         vaultManager.saveWidgetSettings(
             dailyFolder = dailyFolderInput.text.toString().trim(),
             dateFormat = dateFormatInput.text.toString().trim().ifBlank { "yyyy-MM-dd" },
