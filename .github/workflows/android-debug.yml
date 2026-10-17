@@ -5,6 +5,7 @@ on:
     branches:
       - feature/chechu-liquid-glass-v1
       - feature/today-widget-redesign-v2
+      - feature/v3-data-foundation
   pull_request:
     branches:
       - main
@@ -38,6 +39,9 @@ jobs:
 
       - name: Install Android API 34
         run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Run local logic unit tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
 
       - name: Build debug APK
         run: |

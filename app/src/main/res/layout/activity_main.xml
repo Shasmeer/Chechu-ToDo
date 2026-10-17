@@ -1,140 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/app_ambient_background"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="18dp"
+    android:background="@drawable/app_ambient_background">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Today"
+        android:textColor="@color/obsidian_text"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif"/>
+
+    <TextView
+        android:id="@+id/home_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:text="Your tasks and notes, privately on this device"
+        android:textColor="@color/obsidian_text_secondary"
+        android:textSize="12sp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/today_segment_track"
+        android:orientation="horizontal"
+        android:padding="4dp">
+        <Button
+            android:id="@+id/home_tasks"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/today_segment_active"
+            android:backgroundTint="@null"
+            android:text="To-Do"
+            android:textAllCaps="false"
+            android:textColor="@color/obsidian_text"
+            android:textSize="14sp"/>
+        <Button
+            android:id="@+id/home_notes"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/today_segment_inactive"
+            android:backgroundTint="@null"
+            android:text="Notes"
+            android:textAllCaps="false"
+            android:textColor="@color/obsidian_text_secondary"
+            android:textSize="14sp"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingStart="26dp"
-        android:paddingTop="54dp"
-        android:paddingEnd="26dp"
-        android:paddingBottom="36dp">
-
+        android:gravity="center_vertical"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
         <TextView
-            android:layout_width="76dp"
-            android:layout_height="76dp"
-            android:background="@drawable/glass_panel_background"
-            android:contentDescription="Chechu ToDo"
-            android:gravity="center"
-            android:text="✦"
-            android:textColor="@color/obsidian_text"
-            android:textSize="37sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/home_section_title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:fontFamily="sans-serif-light"
-            android:letterSpacing="-0.02"
-            android:text="Chechu"
-            android:textColor="@color/obsidian_text"
-            android:textSize="42sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_weight="1"
+            android:text="Active"
+            android:textSize="15sp"
             android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.12"
-            android:text="YOUR DAY. BEAUTIFULLY IN VIEW."
-            android:textColor="@color/obsidian_text_secondary"
-            android:textSize="10sp" />
-
-        <!-- Informational illustration only: real interactions happen in the widget. -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="38dp"
-            android:background="@drawable/glass_panel_background"
-            android:orientation="vertical"
-            android:padding="24dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.12"
-                android:text="WIDGET PREVIEW"
-                android:textColor="@color/obsidian_accent"
-                android:textSize="10sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="sans-serif-medium"
-                android:text="Little wins, today"
-                android:textColor="@color/obsidian_text"
-                android:textSize="22sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="An example of your home-screen space"
-                android:textColor="@color/obsidian_text_secondary"
-                android:textSize="12sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="◯     Write down what matters"
-                android:textColor="@color/obsidian_text"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:text="◯     Make room for good ideas"
-                android:textColor="@color/obsidian_text"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:text="✓     A little progress counts"
-                android:textColor="@color/obsidian_text_secondary"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
-                android:background="@drawable/input_background"
-                android:gravity="center"
-                android:padding="14dp"
-                android:text="+   Add a thought"
-                android:textColor="@color/obsidian_text"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp"
-            android:text="Long-press your home screen → Widgets → Chechu ToDo"
+            android:textColor="@color/obsidian_text"/>
+        <Button
+            android:id="@+id/home_folder"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/today_secondary_button"
+            android:backgroundTint="@null"
+            android:text="Active ▾"
+            android:textAllCaps="false"
             android:textColor="@color/obsidian_text"
-            android:textSize="14sp" />
+            android:textSize="12sp"/>
+    </LinearLayout>
 
-        <TextView
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+        <LinearLayout
+            android:id="@+id/home_items"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp"
-            android:text="Add the widget, then connect your Obsidian vault in its settings. No cloud account required."
-            android:textColor="@color/obsidian_text_secondary"
-            android:textSize="12sp" />
+            android:orientation="vertical"/>
+    </ScrollView>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/home_add_task"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/today_primary_button"
+            android:backgroundTint="@null"
+            android:text="+ To-Do"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"/>
+        <Button
+            android:id="@+id/home_add_note"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/today_secondary_button"
+            android:backgroundTint="@null"
+            android:text="+ Note"
+            android:textAllCaps="false"
+            android:textColor="@color/obsidian_text"
+            android:textSize="14sp"/>
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

@@ -97,10 +97,11 @@ class QuickCaptureActivity : AppCompatActivity() {
             if (success) {
                 Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
                 ObsidianWidgetProvider.updateAllWidgets(this)
+                finish()
             } else {
-                Toast.makeText(this, R.string.error_saving, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.error_saving, Toast.LENGTH_LONG).show()
+                // Keep the unsaved text and dialog open so the user can retry.
             }
-            finish()
         }
 
         // Handle shared text from other apps
