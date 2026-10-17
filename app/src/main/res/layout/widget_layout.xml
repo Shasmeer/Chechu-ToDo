@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/widget_background"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
+
+    <!-- Independent glass surface: opacity never dims tasks or controls. -->
+    <FrameLayout
+        android:id="@+id/widget_glass_surface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_background" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="17dp">
 
     <!-- Header -->
     <LinearLayout
@@ -27,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:text="Daily Note"
                 android:textColor="@color/obsidian_text"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:fontFamily="sans-serif-medium" />
 
             <TextView
@@ -127,12 +137,14 @@
                 android:layout_height="16dp"
                 android:layout_marginEnd="6dp"
                 android:contentDescription="@null"
+                android:id="@+id/widget_add_icon"
                 android:src="@drawable/ic_add_button" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
+                android:id="@+id/widget_add_label"
                 android:text="Add"
                 android:textColor="@color/white"
                 android:textSize="13sp" />
@@ -155,12 +167,14 @@
                 android:layout_height="16dp"
                 android:layout_marginEnd="6dp"
                 android:contentDescription="@null"
+                android:id="@+id/widget_capture_icon"
                 android:src="@drawable/ic_note" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
+                android:id="@+id/widget_capture_label"
                 android:text="Note"
                 android:textColor="@color/white"
                 android:textSize="13sp" />
@@ -168,3 +182,4 @@
     </LinearLayout>
 
 </LinearLayout>
+</FrameLayout>
