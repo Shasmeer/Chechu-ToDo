@@ -24,10 +24,10 @@ class ChecklistRemoteViewsFactory(
     private var items = listOf<VaultManager.ChecklistItem>()
     private var tapCheckboxOnly = false
     private var themeColors = VaultManager.ThemeColors(
-        bg = 0xFF1A1A1E.toInt(),
-        text = 0xFFE8E6E3.toInt(),
-        textSecondary = 0xFF8B8B8F.toInt(),
-        accent = 0xFFD97757.toInt(),
+        bg = 0xFF101A30.toInt(),
+        text = 0xFFF5F8FF.toInt(),
+        textSecondary = 0xFFB9C9E0.toInt(),
+        accent = 0xFF4A9EF5.toInt(),
         buttonText = 0xFFFFFFFF.toInt()
     )
 
