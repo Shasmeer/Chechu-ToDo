@@ -19,37 +19,39 @@ class ChechuRepository(context: Context) {
     fun getNote(id: String): NoteRecord? = dao.note(id)
     fun history(id: String): List<TaskCompletionRecord> = dao.completionHistory(id)
 
-    fun saveTask(id: String?, title: String, details: String, due: Long?, rule: String): Boolean {
+    fun saveTask(id: String?, title: String, details: String, due: Long?, rule: String, expectedRevision: Long? = null): Boolean {
         val trimmed = title.trim()
         if (trimmed.isEmpty() || rule !in setOf("NONE", "DAILY", "WEEKDAYS", "WEEKLY")) return false
         return db.runInTransaction<Boolean> {
             val existing = id?.let(dao::task)
             if (id != null && existing == null) return@runInTransaction false
             if (existing?.deletedAtMillis != null) return@runInTransaction false
+            if (existing != null && expectedRevision != existing.revision) return@runInTransaction false
             val now = System.currentTimeMillis()
             val saved = if (existing == null) TaskRecord(
                 title = trimmed, details = details.trim(), dueEpochDay = due, repeatRule = rule
             ) else existing.copy(
                 title = trimmed, details = details.trim(), dueEpochDay = due,
-                repeatRule = rule, updatedAtMillis = now
+                repeatRule = rule, updatedAtMillis = now, revision = existing.revision + 1
             )
             if (existing == null) dao.insertTask(saved) else dao.updateTask(saved)
             true
         }
     }
 
-    fun saveNote(id: String?, title: String, body: String): Boolean {
+    fun saveNote(id: String?, title: String, body: String, expectedRevision: Long? = null): Boolean {
         if (title.isBlank() && body.isBlank()) return false
         return db.runInTransaction<Boolean> {
             val existing = id?.let(dao::note)
             if (id != null && existing == null) return@runInTransaction false
             if (existing?.deletedAtMillis != null) return@runInTransaction false
+            if (existing != null && expectedRevision != existing.revision) return@runInTransaction false
             val now = System.currentTimeMillis()
             val saved = if (existing == null) NoteRecord(
                 title = title.trim().ifBlank { "Untitled note" }, body = body
             ) else existing.copy(
                 title = title.trim().ifBlank { "Untitled note" },
-                body = body, updatedAtMillis = now
+                body = body, updatedAtMillis = now, revision = existing.revision + 1
             )
             if (existing == null) dao.insertNote(saved) else dao.updateNote(saved)
             true
@@ -65,6 +67,8 @@ class ChechuRepository(context: Context) {
         if (task.deletedAtMillis != null || task.archivedAtMillis != null) return@runInTransaction false
         val now = System.currentTimeMillis()
         val today = LocalDate.now()
+        // A future scheduled task must not be completed or moved to a later recurrence early.
+        if (task.dueEpochDay != null && task.dueEpochDay > today.toEpochDay()) return@runInTransaction false
         if (task.repeatRule != "NONE") {
             val history = dao.completionHistory(id)
             val alreadyToday = history.any {
@@ -78,7 +82,7 @@ class ChechuRepository(context: Context) {
             dao.insertCompletion(TaskCompletionRecord(taskId = id, scheduledEpochDay = task.dueEpochDay))
             dao.updateTask(task.copy(
                 dueEpochDay = next.toEpochDay(), completed = false,
-                completedAtMillis = null, updatedAtMillis = now
+                completedAtMillis = null, updatedAtMillis = now, revision = task.revision + 1
             ))
         } else {
             if (!task.completed) dao.insertCompletion(TaskCompletionRecord(
@@ -87,7 +91,7 @@ class ChechuRepository(context: Context) {
             dao.updateTask(task.copy(
                 completed = !task.completed,
                 completedAtMillis = if (task.completed) null else now,
-                updatedAtMillis = now
+                updatedAtMillis = now, revision = task.revision + 1
             ))
         }
         true
@@ -106,7 +110,7 @@ class ChechuRepository(context: Context) {
                     "purge" -> { dao.purgeTrashedNote(id); return@runInTransaction record.deletedAtMillis != null }
                     else -> return@runInTransaction false
                 }
-                dao.updateNote(newRecord.copy(updatedAtMillis = now))
+                dao.updateNote(newRecord.copy(updatedAtMillis = now, revision = record.revision + 1))
             } else {
                 val record = dao.task(id) ?: return@runInTransaction false
                 val newRecord = when (operation) {
@@ -117,7 +121,7 @@ class ChechuRepository(context: Context) {
                     "purge" -> { dao.purgeTrashedTask(id); return@runInTransaction record.deletedAtMillis != null }
                     else -> return@runInTransaction false
                 }
-                dao.updateTask(newRecord.copy(updatedAtMillis = now))
+                dao.updateTask(newRecord.copy(updatedAtMillis = now, revision = record.revision + 1))
             }
             true
         }
