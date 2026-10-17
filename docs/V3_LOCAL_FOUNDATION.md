@@ -29,6 +29,9 @@ Existing Obsidian vault files must remain untouched on V3 install and during sou
 - No widget-native inline menu for destructive actions; open the item editor / management app first.
 - No background import or reconciliation with Obsidian changes.
 
+## Compilation status
+The first CI builds flagged Kotlin receiver collisions in the new screen/provider. Corrections are kept in this feature branch and must be verified by a new complete run; no APK or migration is considered approved until tests and compilation succeed.
+
 ## Release gates
 1. `:app:testDebugUnitTest` including recurrence edge cases and `:app:assembleDebug` pass.
 2. UAT on Samsung One UI: create task/note, reopen and edit, check/uncheck, archive, Trash, restore and confirm permanent deletion.
