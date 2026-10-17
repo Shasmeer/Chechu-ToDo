@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
         val settings = label("⚙", 23f).apply {
             gravity = Gravity.CENTER
             contentDescription = "Legacy vault settings"
-            background = surface(pale, 16)
+            this.background = surface(pale, 16)
             setOnClickListener {
                 val ids = AppWidgetManager.getInstance(this@MainActivity).getAppWidgetIds(
                     ComponentName(this@MainActivity, ObsidianWidgetProvider::class.java))
@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity() {
         top.addView(settings, LinearLayout.LayoutParams(dp(46), dp(46)))
         main.addView(top)
         val tabs = horizontal().apply {
-            background = surface(Color.rgb(239, 238, 237), 23)
+            this.background = surface(Color.rgb(239, 238, 237), 23)
             setPadding(dp(4), dp(4), dp(4), dp(4))
         }
         tabTasks = label("To-Do", 14f, true).apply {
@@ -193,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         main.addView(filters)
         background.addView(main)
         val scroller = ScrollView(this).apply {
-            fillViewport = true
+            isFillViewport = true
             clipToPadding = false
         }
         listContainer = vertical().apply {
@@ -203,7 +203,7 @@ class MainActivity : AppCompatActivity() {
         background.addView(scroller, LinearLayout.LayoutParams(-1, 0, 1f))
         addAction = label("+   Add To-Do", 16f, true, Color.WHITE).apply {
             gravity = Gravity.CENTER
-            background = surface(coral, 25)
+            this.background = surface(coral, 25)
             setOnClickListener {
                 if (notesMode) editNote(null) else editTask(null)
             }
@@ -216,12 +216,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refresh() {
-        tabTasks.background = surface(if (!notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT)
-        tabNotes.background = surface(if (notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT)
+        tabTasks.this.background = surface(if (!notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT)
+        tabNotes.this.background = surface(if (notesMode) Color.rgb(255, 227, 216) else Color.TRANSPARENT)
         tabTasks.setTextColor(if (!notesMode) ink else muted)
         tabNotes.setTextColor(if (notesMode) ink else muted)
         for ((name, view) in listOf("active" to stateActive, "archive" to stateArchive, "trash" to stateTrash)) {
-            view.background = surface(if (category == name) Color.WHITE else Color.TRANSPARENT, 14)
+            view.this.background = surface(if (category == name) Color.WHITE else Color.TRANSPARENT, 14)
             view.setTextColor(if (category == name) coral else muted)
         }
         addAction.text = if (notesMode) "+   New Note" else "+   Add To-Do"
@@ -263,7 +263,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderTask(item: TaskRecord) {
         val row = horizontal().apply {
-            background = surface(pale)
+            this.background = surface(pale)
             setPadding(dp(14), dp(13), dp(10), dp(13))
         }
         val check = label(if (item.completed) "✓" else "○", 27f, true,
@@ -295,7 +295,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderNote(item: NoteRecord) {
         val row = horizontal().apply {
-            background = surface(pale)
+            this.background = surface(pale)
             setPadding(dp(18), dp(17), dp(9), dp(17))
         }
         val body = vertical()
