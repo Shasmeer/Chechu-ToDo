@@ -400,7 +400,7 @@ class ObsidianWidgetProvider : AppWidgetProvider() {
             views.setViewVisibility(R.id.widget_note_preview, View.GONE)
             val serviceIntent = Intent(context, ChecklistWidgetService::class.java).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                this.data = Uri.parse("chechu://local/" + appWidgetId + "/" + selectedTab.name)
+                setData(Uri.parse("chechu://local/" + appWidgetId + "/" + selectedTab.name))
             }
             views.setRemoteAdapter(R.id.widget_checklist, serviceIntent)
             val toggleIntent = Intent(context, ObsidianWidgetProvider::class.java).apply {
