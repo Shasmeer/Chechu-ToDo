@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-medium"
-                android:text="Today's little wins"
+                android:text="Little wins, today"
                 android:textColor="@color/obsidian_text"
                 android:textSize="22sp" />
 
