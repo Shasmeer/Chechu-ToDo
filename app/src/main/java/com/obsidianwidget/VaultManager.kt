@@ -19,6 +19,8 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
 
     enum class NoteMode { DAILY, PINNED }
 
+    enum class WidgetTab { TODO, NOTES }
+
     data class NoteHeading(
         val lineIndex: Int,
         val level: Int,
@@ -58,6 +60,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         private const val KEY_PINNED_NOTE_PATHS = "pinned_note_paths"
         private const val KEY_CURRENT_NOTE_INDEX = "current_note_index"
         private const val KEY_WIDGET_ALPHA = "widget_alpha"
+        private const val KEY_WIDGET_TAB = "widget_tab"
         private const val KEY_TAP_CHECKBOX_ONLY = "tap_checkbox_only"
         private const val KEY_ADD_TO_TOP = "add_to_top"
         private const val KEY_SHOW_ADD_TO_TOP = "show_add_to_top"
@@ -90,6 +93,7 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
                 .remove("${KEY_PINNED_NOTE_PATHS}_$widgetId")
                 .remove("${KEY_CURRENT_NOTE_INDEX}_$widgetId")
                 .remove("${KEY_WIDGET_ALPHA}_$widgetId")
+                .remove("${KEY_WIDGET_TAB}_$widgetId")
                 .remove("${KEY_TAP_CHECKBOX_ONLY}_$widgetId")
                 .remove("${KEY_ADD_TO_TOP}_$widgetId")
                 .remove("${KEY_SHOW_ADD_TO_TOP}_$widgetId")
@@ -261,6 +265,18 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         get() = prefs.getBoolean(wk(KEY_HIDE_PROPERTIES), false)
         set(value) = prefs.edit().putBoolean(wk(KEY_HIDE_PROPERTIES), value).apply()
 
+    var widgetTab: WidgetTab
+        get() = if (prefs.getString(wk(KEY_WIDGET_TAB), "TODO") == "NOTES") WidgetTab.NOTES else WidgetTab.TODO
+        set(value) = prefs.edit().putString(wk(KEY_WIDGET_TAB), value.name).apply()
+
+    /** Task lines and plain notes remain separate without rewriting existing vault files. */
+    fun getVisibleItems(): List<ChecklistItem> = parseChecklist().filter { item ->
+        when (widgetTab) {
+            WidgetTab.TODO -> !item.isPlainText
+            WidgetTab.NOTES -> item.isPlainText && !item.isHorizontalRule && item.propertyName == null && !item.isHeading
+        }
+    }
+
     var widgetAlpha: Int
         get() = prefs.getInt(wk(KEY_WIDGET_ALPHA), 100)
         set(value) = prefs.edit().putInt(wk(KEY_WIDGET_ALPHA), value).apply()
@@ -278,11 +294,11 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         set(value) = prefs.edit().putBoolean(wk(KEY_SHOW_ADD_TO_TOP), value).apply()
 
     var widgetTheme: String
-        get() = prefs.getString(wk(KEY_WIDGET_THEME), "system") ?: "system"
+        get() = prefs.getString(wk(KEY_WIDGET_THEME), "light") ?: "light"
         set(value) = prefs.edit().putString(wk(KEY_WIDGET_THEME), value).apply()
 
     var accentColor: String
-        get() = prefs.getString(wk(KEY_ACCENT_COLOR), "#4A9EF5") ?: "#4A9EF5"
+        get() = prefs.getString(wk(KEY_ACCENT_COLOR), "#FF785C") ?: "#FF785C"
         set(value) = prefs.edit().putString(wk(KEY_ACCENT_COLOR), value).apply()
 
     var showTodoCount: Boolean
@@ -290,33 +306,29 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         set(value) = prefs.edit().putBoolean(wk(KEY_SHOW_TODO_COUNT), value).apply()
 
     fun getThemeColors(): ThemeColors {
-        val isDark = isDarkTheme()
-        val accent = try { android.graphics.Color.parseColor(accentColor) } catch (_: Exception) { 0xFF4A9EF5.toInt() }
-        return if (isDark) {
+        val accent = try { android.graphics.Color.parseColor(accentColor) }
+            catch (_: Exception) { 0xFFFF785C.toInt() }
+        return if (isDarkTheme()) {
             ThemeColors(
-                bg = 0xFF101A30.toInt(),
-                text = 0xFFF5F8FF.toInt(),
-                textSecondary = 0xFFB9C9E0.toInt(),
+                bg = 0xFF24252B.toInt(),
+                text = 0xFFF8F8F9.toInt(),
+                textSecondary = 0xFFB5B5BA.toInt(),
                 accent = accent,
                 buttonText = 0xFFFFFFFF.toInt()
             )
         } else {
             ThemeColors(
-                bg = 0xFFF1F6FF.toInt(),
-                text = 0xFF17243A.toInt(),
-                textSecondary = 0xFF52627C.toInt(),
+                bg = 0xFFFDFCFB.toInt(),
+                text = 0xFF1F2024.toInt(),
+                textSecondary = 0xFF777982.toInt(),
                 accent = accent,
                 buttonText = 0xFFFFFFFF.toInt()
             )
         }
     }
 
-    fun isDarkTheme(): Boolean = when (widgetTheme) {
-        "dark" -> true
-        "light" -> false
-        else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
-            Configuration.UI_MODE_NIGHT_YES
-    }
+    // New Today's design is light by default, while explicit Dark remains available.
+    fun isDarkTheme(): Boolean = widgetTheme == "dark"
 
     data class ThemeColors(
         val bg: Int,
@@ -448,6 +460,30 @@ class VaultManager(private val context: Context, private val widgetId: Int = -1)
         if (headingLineIndex != null) {
             return appendToHeading(formatted, headingLineIndex)
         }
+        return when (noteMode) {
+            NoteMode.DAILY -> appendToDailyNote(formatted)
+            NoteMode.PINNED -> appendToPinnedNote(formatted)
+        }
+    }
+
+    /** Each submitted nonempty line becomes its own checkable task. */
+    fun addWidgetTasks(text: String, headingLineIndex: Int? = null): Boolean {
+        val formatted = text.lines().mapNotNull { line ->
+            CAPTURE_TASK_PREFIX.replace(line.trim(), "").trim()
+                .takeIf { it.isNotEmpty() }?.let { "- [ ] $it" }
+        }.joinToString("\n")
+        if (formatted.isEmpty()) return false
+        return if (headingLineIndex != null) appendToHeading(formatted, headingLineIndex)
+        else when (noteMode) {
+            NoteMode.DAILY -> appendToDailyNote(formatted)
+            NoteMode.PINNED -> appendToPinnedNote(formatted)
+        }
+    }
+
+    /** Notes remain normal Markdown text and never become checklist items. */
+    fun addWidgetNotes(text: String): Boolean {
+        val formatted = text.lines().map { it.trim() }.filter { it.isNotEmpty() }.joinToString("\n")
+        if (formatted.isBlank()) return false
         return when (noteMode) {
             NoteMode.DAILY -> appendToDailyNote(formatted)
             NoteMode.PINNED -> appendToPinnedNote(formatted)
